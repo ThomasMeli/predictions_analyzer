@@ -7,17 +7,21 @@ import sklearn.linear_model
 import sklearn.tree
 import sklearn.ensemble
 import sklearn.metrics
+import sklearn.naive_bayes
+import sklearn.neighbors
 
 import pandas as pd
 from src.analyze import Analyzer
 
-def get_classification():
+def get_classification(random_state = 42):
     X, y = sklearn.datasets.make_classification(
+        n_samples = 1000,
         n_classes = 5,
         n_features = 20,
         n_informative = 5,
         n_redundant = 15,
-        n_clusters_per_class = 3
+        n_clusters_per_class = 3,
+        random_state = random_state
     )
 
     # For logging
@@ -32,7 +36,7 @@ class BaseClassificationAnalyzer:
 class BaseRegressionAnalyzer:
     pass
 
-class ExampleClassificationAnalyzer:
+class ExampleClassificationAnalyzer():
     """
     FITTING
     PREDICTING
@@ -40,24 +44,34 @@ class ExampleClassificationAnalyzer:
 
     """
 
-    def __init__(self):
+    def __init__(self, random_state = 42):
 
-        self.X, self.y = get_classification()
+        self.X, self.y = get_classification(random_state = random_state)
+
         self.is_fit = False
 
         self.y_true = self.y
 
+        max_depth = 7  # Constrain easy overfitting
+
+        # Set random state / seeds for these
         self.logistic_reg = sklearn.linear_model.LogisticRegression()
         self.ridge = sklearn.linear_model.RidgeClassifier()
-        self.dec_tree = sklearn.tree.DecisionTreeClassifier()
-        self.extr_tree = sklearn.ensemble.ExtraTreesClassifier()
-        self.random_forest = sklearn.ensemble.RandomForestClassifier()
-        self.bagging_clf = sklearn.ensemble.BaggingClassifier()
-
+        self.svc = sklearn.svm.SVC()
+        self.nb = sklearn.naive_bayes.GaussianNB()
+        self.knn = sklearn.neighbors.KNeighborsClassifier()
+        self.dec_tree = sklearn.tree.DecisionTreeClassifier(max_depth = max_depth)
+        self.extr_tree = sklearn.ensemble.ExtraTreesClassifier(max_depth = max_depth)
+        self.random_forest = sklearn.ensemble.RandomForestClassifier(max_depth = max_depth)
+        self.bagging_clf = sklearn.ensemble.BaggingClassifier(max_features = 0.4,
+                                                              max_samples = 0.4)
         # A list of named tuples of all models to loop through.
         self.models = [
             (self.logistic_reg, "logistic_reg"),
             (self.ridge, "ridge"),
+            (self.knn, "knn"),
+            (self.nb, "nb"),
+            (self.svc, "SVC"),
             (self.dec_tree, "dec_tree"),
             (self.random_forest, "random_forest"),
             (self.extr_tree, "extr_tree"),
@@ -78,12 +92,19 @@ class ExampleClassificationAnalyzer:
 
         ]
 
+
+        ########## Questionable Initializations ###########
         # Initialize here?
         self.metrics_df = pd.DataFrame()
 
         # Initialize here?
         self.accuracy = []  # List of accuracy scores?
 
+        #Initialize Here
+        self.ensembled_preds_df = pd.DataFrame()
+
+        # This will be the original_preds & ensembled_preds
+        self.all_preds_df = pd.DataFrame()
 
     def _set_is_fit(self, is_it_fit: bool):
         """
@@ -189,16 +210,34 @@ class ExampleClassificationAnalyzer:
         """
 
         # FIX: apply_ytrue should be private function
+        # Modularize this.
+        ### DRY Violated
+
         new_metric = self.apply_ytrue(func = func,
                                       df = self.preds_df,
                                       func_name = func_name)
-
 
         assert new_metric.empty != True  # Was the new_metric created?
 
         # Encapsulate this in a new private function
         self.metrics_df = pd.concat([self.metrics_df, new_metric])
-        assert self.metrics_df.empty != True # Has metric been added to self.metrics_df?
+        assert self.metrics_df.empty != True  # Has metric been added to self.metrics_df?
+
+
+        ########### Do the same for Ensembled Preds ###################
+        # Modularize this
+        # If ensembled predictions have been created...
+        if self.ensembled_preds_df.empty != True:
+            new_ensembled_metric = self.apply_ytrue(func = func,
+                                                    df=self.ensembled_preds_df,
+                                                    func_name=func_name)
+
+            self.metrics_df = pd.concat([self.metrics_df, new_ensembled_metric])
+
+            assert self.metrics_df.empty != True  # Has metric been added to self.metrics_df?
+
+
+
 
 
     def do_binary_metrics(self):
@@ -214,7 +253,7 @@ class ExampleClassificationAnalyzer:
         num_rightwrong_df = pd.DataFrame()
 
 
-    def get_accuracy_scores(self):
+    def fit_accuracy_scores(self):
         """
         Redundant function now?
         Remove?
@@ -275,7 +314,52 @@ class ExampleClassificationAnalyzer:
     def analyze_ensemble(self):
         pass
 
-    def fit_ensemble(self):
+    def add_to_ensembled_preds_df_with_ensemble_func(self):
+        """
+        Generalize the below to deal with any aggregation function.
+
+        :return:
+        """
+
+    def add_metric_to_metric_df(self,
+                                func,
+                                func_name):
+        """
+        I've been concatenating but this leaves double rows
+        of the same metric.
+
+        Solve this problem by calling this function when adding
+        another metric to a DF that already has other metrics
+        OR is blank.
+
+        :return:
+        """
+        new_preds = func(axis=1)
+        new_preds_df = pd.DataFrame(new_preds, columns=[func_name]).astype(int)
+
+        # ADD: IF THERE IS ALREADY A MEAN ROW, DROP IT.
+        # Code here
+
+        # Add Here
+        self.ensembled_preds_df = pd.concat([self.ensembled_preds_df, new_preds_df], axis = 1)
+
+
+    def fit_mean_ensemble(self):
+        self.add_metric_to_metric_df(self.preds_df.mean,
+                                     "mean_ensemble")
+
+
+    def fit_median_ensemble(self):
+        self.add_metric_to_metric_df(self.preds_df.median,
+                                     "median_ensemble")
+
+    def fit_all_stats_ensembles(self):
+
+        self.fit_mean_ensemble()
+        self.fit_median_ensemble()
+
+
+    def fit_best_ensemble(self):
         """
 
         :return:
