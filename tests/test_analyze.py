@@ -8,4 +8,6 @@ def _validate_df():
     pass
 
 def test_constructor():
-    assert Analyzer()
+
+    df = pd.DataFrame()
+    assert Analyzer(df)
