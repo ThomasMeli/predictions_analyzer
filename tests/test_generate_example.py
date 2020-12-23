@@ -1,6 +1,18 @@
 
 from src.generate_example import *
 
+def get_ExClfObj():
+    ex = ExampleClassificationAnalyzer()
+
+    ex.fit()
+    ex.predict()
+
+    return ex
+
+def test_apply_w_y_true_works():
+    ex = get_ExClfObj()
+
+
 def test_validate_classification_constructor():
 
     X, y = get_classification()

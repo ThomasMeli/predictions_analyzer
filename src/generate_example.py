@@ -15,8 +15,8 @@ def get_classification():
     X, y = sklearn.datasets.make_classification(
         n_classes = 5,
         n_features = 20,
-        n_informative = 15,
-        n_redundant = 5,
+        n_informative = 5,
+        n_redundant = 15,
         n_clusters_per_class = 3
     )
 
@@ -91,7 +91,8 @@ class ExampleClassificationAnalyzer:
 
     def fit(self):
         """
-        Fit all the base models.
+        Fit all models on the self.X and self.y data in __init__
+
         :return:
         """
 
@@ -108,6 +109,9 @@ class ExampleClassificationAnalyzer:
         for model, model_name in self.models:
             self.preds_df[model_name] = model.predict(self.X)
 
+        # Drop y_true.  Just keep it in self.y_true
+        self.preds_df = self.preds_df.drop("y_true", axis = 1)
+
         return self.preds_df
 
     def within_threshold(self, threshold: float):
@@ -120,8 +124,51 @@ class ExampleClassificationAnalyzer:
 
         # Validate that the model is fit already.
 
-    def get_accuracy_scores(self):
+    def apply_w_y_true(self, func, other_col):
+        """
+        TEMP?
+        Helper function to use df.apply with
+        self.preds_df
+
+        func - the function being passed to apply
+        across columns
+
+        other_col - the other_column besides
+        y_true that is being accessed
+
+        Should we keep y_true separate?
+
+        :return:
+        """
         pass
+
+
+    def calculate_from_preds_df(self):
+        """
+        TEMP?
+        Helper function to encapsulate any future
+        changes to apply_w_y_true or the
+        preds_df structure
+
+        :return:
+        """
+        pass
+
+    def get_num_wrong_right(self):
+        """
+
+        :return: a df of number right, wrong, and proportions
+        """
+
+        num_rightwrong_df = pd.DataFrame()
+
+
+    def get_accuracy_scores(self):
+
+        acc_score_series = pd.Series()
+
+        for model, model_name in self.models:
+            self.accuracy_scores = sklearn.metrics.accuracy_score()
 
 
     def get_classification_metrics(self):
