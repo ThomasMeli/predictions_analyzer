@@ -150,6 +150,25 @@ class ExampleClassificationAnalyzer:
     def analyze(self):
         pass
 
+    def find_hardest_samples(self):
+        """
+        ANALYZE:
+
+        These are the samples that were the hardest to
+        get correct.
+
+        For each sample, find total "correct" and "wrong"
+        Sort these results by the most wrong.
+
+        FOLLOW UP:
+        Then do a cluster / correlation / dependency analysis
+        in the X field on these samples to find out
+        if they have something in common.
+
+        :return:
+        """
+        pass
+
     def analyze_ensemble(self):
         pass
 
