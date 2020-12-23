@@ -6,6 +6,7 @@ import sklearn.datasets
 import sklearn.linear_model
 import sklearn.tree
 import sklearn.ensemble
+import sklearn.metrics
 
 import pandas as pd
 from src.analyze import Analyzer
@@ -32,6 +33,13 @@ class BaseRegressionAnalyzer:
     pass
 
 class ExampleClassificationAnalyzer:
+    """
+    FITTING
+    PREDICTING
+    ANALYZING should be clearly differentiated and encapsulated things.
+
+    """
+
     def __init__(self):
 
         self.X, self.y = get_classification()
@@ -39,9 +47,8 @@ class ExampleClassificationAnalyzer:
 
         self.y_true = self.y
 
-        self.linreg = sklearn.linear_model.LinearRegression()
-        self.lasso = sklearn.linear_model.Lasso()
-        self.ridge = sklearn.linear_model.Ridge()
+        self.logistic_reg = sklearn.linear_model.LogisticRegression()
+        self.ridge = sklearn.linear_model.RidgeClassifier()
         self.dec_tree = sklearn.tree.DecisionTreeClassifier()
         self.extr_tree = sklearn.ensemble.ExtraTreesClassifier()
         self.random_forest = sklearn.ensemble.RandomForestClassifier()
@@ -49,14 +56,15 @@ class ExampleClassificationAnalyzer:
 
         # A list of named tuples of all models to loop through.
         self.models = [
-            (self.linreg, "linreg"),
-            (self.lasso, "lasso"),
+            (self.logistic_reg, "logistic_reg"),
             (self.ridge, "ridge"),
             (self.dec_tree, "dec_tree"),
             (self.random_forest, "random_forest"),
             (self.extr_tree, "extr_tree"),
             (self.bagging_clf, "bagging_clf")
                     ]
+
+        self.accuracy = []  # List of accuracy scores?
 
 
     def _set_is_fit(self, is_it_fit: bool):
@@ -112,8 +120,32 @@ class ExampleClassificationAnalyzer:
 
         # Validate that the model is fit already.
 
-    def get_classification_metrics(self):
+    def get_accuracy_scores(self):
         pass
+
+
+    def get_classification_metrics(self):
+
+        """
+        ANALYZE: assumes fit_predicted data already
+        and just needs self.preds_df.
+
+        Get classification_metrics for each of the classifiers
+
+        :return:
+        """
+        # Call helper function to find if this is a multi-class problem
+        # or a binary classification problem.
+
+        # Make this configurable
+        multiclass_kwargs = {"average":"micro"}
+
+        metric_names = ["accuracy", "recall_score", "precision_score", "f1_score"]
+
+        self.metrics_df = pd.DataFrame(index = metric_names)
+
+        # Need a better way to do this!!!!!!!!!
+        # Nested for loop?  Apply?
 
     def analyze(self):
         pass

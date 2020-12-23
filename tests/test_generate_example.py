@@ -10,7 +10,7 @@ def test_validate_classification_constructor():
 def test_ExampleAnalyzerConstructor():
     assert ExampleClassificationAnalyzer()
 
-def test_fit():
+def test_fit_predict():
     ex = ExampleClassificationAnalyzer()
 
     ex.fit()
@@ -18,5 +18,15 @@ def test_fit():
 
     print(ex.preds_df)
     print(ex.preds_df.shape)
+
+def test_fit_class_metrics():
+    ex = ExampleClassificationAnalyzer()
+
+    ex.fit()
+    ex.predict()
+    ex.get_classification_metrics()
+
+    print(ex.metrics_df)
+
 
 
