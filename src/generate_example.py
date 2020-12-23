@@ -208,3 +208,7 @@ class ExampleClassificationAnalyzer:
         pass
 
 
+### For testing
+
+#%%
+ex = ExampleClassificationAnalyzer()
