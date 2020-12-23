@@ -1,5 +1,6 @@
 
 from src.generate_example import *
+from sklearn.metrics import accuracy_score
 
 def get_ExClfObj():
     ex = ExampleClassificationAnalyzer()
@@ -9,8 +10,23 @@ def get_ExClfObj():
 
     return ex
 
-def test_apply_w_y_true_works():
+def test_apply_ytrue():
     ex = get_ExClfObj()
+
+    accuracy = ex.apply_ytrue(func = accuracy_score,
+                                 func_name = "accuracy_score",
+                                 df = ex.preds_df)
+    print(accuracy)
+    print(accuracy.shape)
+
+def test_add_to_metrics_from_ytrue_and_preds_df():
+    ex = get_ExClfObj()
+    ex.add_to_metrics_from_ytrue_and_preds_df(func = accuracy_score,
+                                              func_name = "accuracy_score")
+
+    print(ex.metrics_df)
+
+    assert ex.metrics_df.empty != True  # Assert dataframe is not empty.
 
 
 def test_validate_classification_constructor():

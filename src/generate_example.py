@@ -64,6 +64,10 @@ class ExampleClassificationAnalyzer:
             (self.bagging_clf, "bagging_clf")
                     ]
 
+        # Initialize here?
+        self.metrics_df = pd.DataFrame()
+
+        # Initialize here?
         self.accuracy = []  # List of accuracy scores?
 
 
@@ -124,35 +128,64 @@ class ExampleClassificationAnalyzer:
 
         # Validate that the model is fit already.
 
-    def apply_w_y_true(self, func, other_col):
+    def apply_ytrue(self,
+                       func,
+                       df: pd.DataFrame,
+                       func_name: str = None,):
         """
-        TEMP?
+        TO UPDATE: Should be private function
+
+        Applies func(y_true, col in cols...) across dataframe df
+
         Helper function to use df.apply with
-        self.preds_df
+        self.preds_df and self.y_true
 
         func - the function being passed to apply
-        across columns
+        across columns.  func should take self.y_true
+        as its first argument.
 
-        other_col - the other_column besides
-        y_true that is being accessed
+        df - the df to apply the func to.
 
-        Should we keep y_true separate?
-
-        :return:
+        :return: a df or series with the result.
         """
-        pass
+
+        # How to get this to work with pd.apply when there is varying
+        # positional arguments?  args = () ?
+
+        applied_df = pd.DataFrame(columns = df.columns,
+                                  index = [func_name])
+
+        for col in df.columns:
+            applied_df[col] = func(self.y_true, df[col])
+
+        return applied_df
 
 
-    def calculate_from_preds_df(self):
+    def add_to_metrics_from_ytrue_and_preds_df(self,
+                                               func,
+                                               func_name: str = None):
         """
-        TEMP?
-        Helper function to encapsulate any future
-        changes to apply_w_y_true or the
+
+        Helper wrapper function to apply_ytrue
+        encapsulate any future
+        changes to apply_ytrue or the
         preds_df structure
 
         :return:
         """
-        pass
+
+        # FIX: apply_ytrue should be private function
+        new_metric = self.apply_ytrue(func = func,
+                                      df = self.preds_df,
+                                      func_name = func_name)
+
+
+        assert new_metric.empty != True  # Assert dataframe is not empty.
+
+        self.metrics_df = pd.concat([self.metrics_df, new_metric])
+
+        assert self.metrics_df.empty != True
+
 
     def get_num_wrong_right(self):
         """
