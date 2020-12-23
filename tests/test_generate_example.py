@@ -29,6 +29,19 @@ def test_add_to_metrics_from_ytrue_and_preds_df():
     assert ex.metrics_df.empty != True  # Assert dataframe is not empty.
 
 
+def test_get_accuracy_scores():
+    ex = get_ExClfObj()
+    ex.get_accuracy_scores()
+
+    accuracy_score_df = ex.metrics_df.loc["accuracy_score"]
+
+    print(accuracy_score_df)
+    print(accuracy_score_df.shape)
+
+    # Assert accuracy_score is only one row!
+    # assert accuracy_score_df.shape == tuple(len(ex.models), )
+
+
 def test_validate_classification_constructor():
 
     X, y = get_classification()

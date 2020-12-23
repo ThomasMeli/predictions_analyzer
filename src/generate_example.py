@@ -64,6 +64,20 @@ class ExampleClassificationAnalyzer:
             (self.bagging_clf, "bagging_clf")
                     ]
 
+
+        self.binary_metrics = [
+            (sklearn.metrics.accuracy_score, "accuracy_score"),
+            (sklearn.metrics.roc_auc_score, "roc_auc_score")
+        ]
+
+        self.binary_or_multiclass_metrics = [
+            (sklearn.metrics.precision_score, "precision_score"),
+            (sklearn.metrics.recall_score, "recall_score"),
+            (sklearn.metrics.f1_score, "f1_score"),
+            (sklearn.metrics.log_loss, "log_loss")
+
+        ]
+
         # Initialize here?
         self.metrics_df = pd.DataFrame()
 
@@ -180,11 +194,15 @@ class ExampleClassificationAnalyzer:
                                       func_name = func_name)
 
 
-        assert new_metric.empty != True  # Assert dataframe is not empty.
+        assert new_metric.empty != True  # Was the new_metric created?
 
+        # Encapsulate this in a new private function
         self.metrics_df = pd.concat([self.metrics_df, new_metric])
+        assert self.metrics_df.empty != True # Has metric been added to self.metrics_df?
 
-        assert self.metrics_df.empty != True
+
+    def do_binary_metrics(self):
+        pass
 
 
     def get_num_wrong_right(self):
@@ -197,11 +215,16 @@ class ExampleClassificationAnalyzer:
 
 
     def get_accuracy_scores(self):
+        """
+        Redundant function now?
+        Remove?
 
-        acc_score_series = pd.Series()
+        :return:
+        """
 
-        for model, model_name in self.models:
-            self.accuracy_scores = sklearn.metrics.accuracy_score()
+        self.add_to_metrics_from_ytrue_and_preds_df(
+            func=sklearn.metrics.accuracy_score,
+            func_name="accuracy_score")
 
 
     def get_classification_metrics(self):
