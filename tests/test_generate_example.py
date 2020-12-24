@@ -122,7 +122,6 @@ def test_ensembled_preds_metrics_exist():
         func_name = "accuracy_score"
     )
 
-
     print(ex.metrics_df)
 
     assert ex.metrics_df.empty != True
@@ -135,4 +134,7 @@ def test_find_hardest_samples():
     ex = get_ExClfObj()
 
     ex.find_hardest_samples()
+
+    # Assert all values in self.trues_df?
+
 

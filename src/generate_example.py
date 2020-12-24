@@ -310,27 +310,26 @@ class ExampleClassificationAnalyzer():
         :return:
         """
 
-        #
-        #
-        #
-        # Inefficient method
-        # For each row, calculate number wrong.  Create a new series.
-        # Then
+        trues_df = self.preds_df.copy()
 
-        trues_df = pd.DataFrame(index = self.preds_df,
-                                columns = self.preds_df)
+        # Set all to the trues for easy comparison.
+        for col in trues_df.columns:
+            trues_df[col] = self.y_true
 
-        # UPDATE
-        # Better algorithm is to make ALL of the rows equal
-        # to y_true and then do an elementwise boolean mask.
 
-        for col in self.preds_df.columns:
-            trues_series_mask = pd.Series(self.preds_df.loc[:, col]) == self.y_true
-            trues_df[col] = trues_series
+        correct_mask = trues_df == self.preds_df
 
-        print(trues_df)
+        self.correct_mask = correct_mask
 
-        pass
+        n_correct = correct_mask.sum(axis = 1).sort_values()
+
+        self.n_correct = n_correct
+
+        print(n_correct)
+        print(n_correct.value_counts().sort_values())
+
+        return n_correct
+
 
     def analyze_ensemble(self):
         pass
