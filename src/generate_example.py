@@ -309,6 +309,27 @@ class ExampleClassificationAnalyzer():
 
         :return:
         """
+
+        #
+        #
+        #
+        # Inefficient method
+        # For each row, calculate number wrong.  Create a new series.
+        # Then
+
+        trues_df = pd.DataFrame(index = self.preds_df,
+                                columns = self.preds_df)
+
+        # UPDATE
+        # Better algorithm is to make ALL of the rows equal
+        # to y_true and then do an elementwise boolean mask.
+
+        for col in self.preds_df.columns:
+            trues_series_mask = pd.Series(self.preds_df.loc[:, col]) == self.y_true
+            trues_df[col] = trues_series
+
+        print(trues_df)
+
         pass
 
     def analyze_ensemble(self):
@@ -352,6 +373,15 @@ class ExampleClassificationAnalyzer():
     def fit_median_ensemble(self):
         self.add_metric_to_metric_df(self.preds_df.median,
                                      "median_ensemble")
+
+    def fit_mode_ensemble(self):
+
+        # This doesn't work.
+        # Gives ValueError: Cannot convert non-finite values (NA or inf) to integer
+
+        #self.add_metric_to_metric_df(self.preds_df.mode,
+        #                             "mode_ensemble")
+        pass
 
     def fit_all_stats_ensembles(self):
 

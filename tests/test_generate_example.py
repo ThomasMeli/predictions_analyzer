@@ -87,6 +87,17 @@ def test_median_ensemble():
 
     # Assert there is only one mean column!
 
+def test_mode_ensemble():
+    ex = get_ExClfObj()
+
+    ex.fit_mode_ensemble()
+
+    print(ex.ensembled_preds_df)
+
+    assert ex.ensembled_preds_df.empty != True
+
+    # Assert there is only one mean column!
+
 def test_all_stat_ensembled_pred_metrics():
     ex = get_ExClfObj()
 
@@ -117,5 +128,11 @@ def test_ensembled_preds_metrics_exist():
     assert ex.metrics_df.empty != True
 
     # BUG: when adding ensembles, it adds another row.
+    # TO DO:
     # assert accuracy_score is in one row.
+
+def test_find_hardest_samples():
+    ex = get_ExClfObj()
+
+    ex.find_hardest_samples()
 
