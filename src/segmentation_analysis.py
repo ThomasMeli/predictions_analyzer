@@ -31,31 +31,43 @@ import matplotlib.pyplot as plt
 # Example
 # https://stackoverflow.com/questions/31273652/how-to-calculate-dice-coefficient-for-measuring-accuracy-of-image-segmentation-i
 
-k=1
 
-# segmentation
-seg = np.zeros((100,100), dtype='int')
-seg[30:70, 30:70] = k
+def create_segmentation_masks():
 
-#plt.imshow(seg)
-#plt.show()
+    # The mask value
+    k=1
 
-# ground truth
-gt = np.zeros((100,100), dtype='int')
-gt[30:70, 40:80] = k
+    # segmentation
+    seg = np.zeros((100,100), dtype='int')
+    seg[30:70, 30:70] = k
 
-#plt.imshow(gt)
-#plt.show()
+    #plt.imshow(seg)
+    #plt.show()
 
-dice = np.sum(seg[gt==k])*2.0 / (np.sum(seg) + np.sum(gt))
+    # ground truth
+    gt = np.zeros((100,100), dtype='int')
+    gt[30:70, 40:80] = k
 
-print('Dice similarity score is {}'.format(dice))
+    #plt.imshow(gt)
+    #plt.show()
 
-wrong_mask = gt - seg
+    #dice = np.sum(seg[gt==k])*2.0 / (np.sum(seg) + np.sum(gt))
+
+    #print('Dice similarity score is {}'.format(dice))
+
+    # wrong_mask = gt - seg
+
+    return gt, seg
 
 #plt.imshow(wrong_mask)
 #plt.show()
 # turn axes off.
+
+def get_dice_coeff(truth, predicted):
+
+    dice = np.sum(seg[truth==mask_value])*2.0 / (np.sum(predicted) + np.sum(truth))
+
+    return dice
 
 def show_wrong_mask(truth, predicted):
 
@@ -84,4 +96,6 @@ def show_wrong_mask(truth, predicted):
 
     plt.show()
 
+######### main ##############
+gt, seg = create_segmentation_masks()
 show_wrong_mask(gt, seg)
