@@ -1,6 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+# TODO: Fix and normalize mask value so that it is the non-zero value.
+
+
 
 # Only use numpy / matplotlib to keep dependencies simple
 
@@ -35,6 +38,7 @@ import matplotlib.pyplot as plt
 def create_segmentation_masks():
 
     # The mask value
+    # mask_value = 1
     k=1
 
     # segmentation
@@ -65,6 +69,8 @@ def create_segmentation_masks():
 
 def get_dice_coeff(truth, predicted):
 
+    mask_value = 1
+
     dice = np.sum(seg[truth==mask_value])*2.0 / (np.sum(predicted) + np.sum(truth))
 
     return dice
@@ -74,9 +80,9 @@ def show_wrong_mask(truth, predicted):
     # Assert the shapes are the same.
 
     mask_value = 1
+
     # Calculate Dice Coeff
     dice = np.sum(seg[truth==mask_value])*2.0 / (np.sum(predicted) + np.sum(truth))
-
 
     wrong_mask = truth - predicted
 
@@ -95,6 +101,9 @@ def show_wrong_mask(truth, predicted):
     axs[2].set_title("Wrong_mask")
 
     plt.show()
+
+# Same thing as above with MANY files.
+
 
 ######### main ##############
 gt, seg = create_segmentation_masks()
