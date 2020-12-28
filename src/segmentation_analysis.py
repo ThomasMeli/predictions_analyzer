@@ -76,7 +76,12 @@ def get_dice_coeff(truth, predicted):
     return dice
 
 def show_wrong_mask(truth, predicted):
-
+    """
+    TODO: 
+    :param truth:
+    :param predicted:
+    :return:
+    """
     # Assert the shapes are the same.
 
     mask_value = 1
@@ -103,6 +108,15 @@ def show_wrong_mask(truth, predicted):
     plt.show()
 
 # Same thing as above with MANY files.
+def show_many_wrongs_mask():
+    """
+    Produces a 3 column by x_predictor image
+    and synthesizes the false positive, correct, and false negative
+    pixels.
+
+    :return:
+    """
+    pass
 
 
 ######### main ##############
