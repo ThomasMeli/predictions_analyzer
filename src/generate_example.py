@@ -331,6 +331,21 @@ class ExampleClassificationAnalyzer():
         return n_correct
 
 
+    def find_most_variance(self):
+        """
+        This function finds the samples that had
+        the most variance across them.
+
+        Highest std / variance.
+
+        What does this mean in terms of Classification?
+        Most different guesses.
+
+
+        :return:
+        """
+        pass
+
     def analyze_ensemble(self):
         pass
 
