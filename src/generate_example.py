@@ -14,6 +14,13 @@ import pandas as pd
 from src.analyze import Analyzer
 
 def get_classification(random_state = 42):
+    """
+    Creates a classification dataset.
+    Wrapper for sklearn's make_classification.
+
+    :param random_state: Specifies a random seed
+    :return: A tuple of X,y values.
+    """
     X, y = sklearn.datasets.make_classification(
         n_samples = 1000,
         n_classes = 5,
@@ -438,8 +445,3 @@ class ExampleClassificationAnalyzer():
     def bootstrap(self):
         pass
 
-
-### For testing
-
-#%%
-ex = ExampleClassificationAnalyzer()

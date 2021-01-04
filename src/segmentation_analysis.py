@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+import random
+
 # TODO: Fix and normalize mask value so that it is the non-zero value.
 
 
@@ -35,47 +37,70 @@ import matplotlib.pyplot as plt
 # https://stackoverflow.com/questions/31273652/how-to-calculate-dice-coefficient-for-measuring-accuracy-of-image-segmentation-i
 
 
-def create_segmentation_masks():
+def create_segmentation_masks(random_shift = True,
+                              n_samples = 1):
 
-    # The mask value
-    # mask_value = 1
-    k=1
+    all_true_masks = []
+    all_predicted_masks = []
 
-    # segmentation
-    seg = np.zeros((100,100), dtype='int')
-    seg[30:70, 30:70] = k
+    for img_id in range(n_samples):
 
-    #plt.imshow(seg)
-    #plt.show()
+        if random_shift:
+            v_shift = random.randint(1, 20)
+            h_shift = random.randint(1, 20)
+        else:
+            v_shift = 0
+            h_shift = 0
 
-    # ground truth
-    gt = np.zeros((100,100), dtype='int')
-    gt[30:70, 40:80] = k
+        mask_value = 1
 
-    #plt.imshow(gt)
-    #plt.show()
+        # segmentation
+        predicted_seg = np.zeros((100, 100), dtype='int')
+        predicted_seg[30-v_shift:70-v_shift, 30-h_shift:70-h_shift] = mask_value
 
-    #dice = np.sum(seg[gt==k])*2.0 / (np.sum(seg) + np.sum(gt))
+        # ground truth
+        ground_truth = np.zeros((100,100), dtype='int')
+        ground_truth[30:70, 40:80] = mask_value
 
-    #print('Dice similarity score is {}'.format(dice))
+        if n_samples > 1:
+            all_true_masks.append(ground_truth)
+            all_predicted_masks.append(predicted_seg)
 
-    # wrong_mask = gt - seg
+    if n_samples == 1:
+        return ground_truth, predicted_seg
 
-    return gt, seg
+    elif n_samples > 1:
+        return all_true_masks, all_predicted_masks
 
 #plt.imshow(wrong_mask)
 #plt.show()
 # turn axes off.
 
-def get_dice_coeff(truth, predicted):
+def create_segmentation_masks_dataset():
+    pass
+
+def get_dice_coeff(truth: np.array,
+                   predicted: np.array) -> float:
+    """
+
+    :param truth: The true mask.
+    :param predicted: The predicted mask
+    :return: The dice coefficient
+    """
 
     mask_value = 1
 
-    dice = np.sum(seg[truth==mask_value])*2.0 / (np.sum(predicted) + np.sum(truth))
+    dice = np.sum(predicted[truth==mask_value])*2.0 / (np.sum(predicted) + np.sum(truth))
 
     return dice
 
-def show_wrong_mask(truth, predicted):
+def show_wrong_masks(truths,
+                     preds):
+    pass
+
+def show_wrong_mask(truth,
+                    predicted,
+                    ):
     """
     TODO: 
     :param truth:
@@ -84,9 +109,9 @@ def show_wrong_mask(truth, predicted):
     """
     # Assert the shapes are the same.
 
-    mask_value = 1
+    mask_value = 1   # This should be global-like...
 
-    # Calculate Dice Coeff
+    # Calculate Dice Coefficient
     dice = np.sum(seg[truth==mask_value])*2.0 / (np.sum(predicted) + np.sum(truth))
 
     wrong_mask = truth - predicted
@@ -96,29 +121,100 @@ def show_wrong_mask(truth, predicted):
     the_title = f"True, Predicted Comparison. Dice: {dice}"
     fig.suptitle(the_title)
 
-    axs[0].imshow(truth)
+    axs[0].imshow(truth, cmap = "gray")
     axs[0].set_title("True")
 
-    axs[1].imshow(predicted)
+    axs[1].imshow(predicted, cmap = "gray")
     axs[1].set_title("Predicted")
 
-    axs[2].imshow(wrong_mask)
+    axs[2].imshow(wrong_mask, cmap = "gray")
     axs[2].set_title("Wrong_mask")
 
     plt.show()
 
-# Same thing as above with MANY files.
-def show_many_wrongs_mask():
-    """
-    Produces a 3 column by x_predictor image
-    and synthesizes the false positive, correct, and false negative
-    pixels.
+def mask_lists_to_array():
+    pass
 
-    :return:
-    """
+def validate_lists():
     pass
 
 
-######### main ##############
-gt, seg = create_segmentation_masks()
-show_wrong_mask(gt, seg)
+def show_many_wrongs_mask(truths,
+                          preds):
+    """
+    Same thing as single analysis but with MANY files.
+
+    :return:
+    """
+
+    assert len(truths) == len(preds)  # Make sure same number of images in both
+    n_images = len(truths)
+
+    mask_value = 1   # This should be global-like...
+    dice_vals = []
+
+    fig, axs = plt.subplots(nrows = n_images,
+                            ncols = 3,
+                            sharex = True,
+                            sharey = True)
+
+
+    for row in range(n_images):
+
+        truth = truths[row]
+        predicted = preds[row]
+
+        dice = np.sum(predicted[truth==mask_value])*2.0 / (np.sum(predicted) + np.sum(truth))
+        dice_vals.append(dice)
+
+        if row == 0:
+            axs[row, 0].set_title("True")
+            axs[row, 1].set_title("Predicted")
+            axs[row, 2].set_title("Wrong_mask")
+
+        wrong_mask = truth - predicted
+
+        axs[row, 0].imshow(truth, cmap = "gray")
+        axs[row, 0].axis('off')
+
+        axs[row, 1].imshow(predicted, cmap = "gray")
+        axs[row, 1].axis('off')
+
+        axs[row, 2].imshow(wrong_mask, cmap = "gray")
+        axs[row, 2].axis('off')
+
+
+    avg_dice = round(np.array(dice_vals).mean(), 2)
+    the_title = f"True, Predicted Comparison. Avg Dice: {avg_dice}"
+    fig.suptitle(the_title)
+
+    plt.show()
+
+def analyze_preds_bias(true_mask_list, pred_mask_list):
+    """
+    Tries to find systematic bias in the predicted vs actual
+    values.
+
+    :return:
+    """
+
+    n_images = len(true_mask_list)
+    wrong_masks = []
+
+    for row in range(n_images):
+        truth = true_mask_list[row]
+        predicted = pred_mask_list[row]
+
+        wrong_mask = truth - predicted
+        wrong_masks.append(wrong_mask)
+
+    print(np.array(wrong_masks).shape)
+    mean_wrongs = np.mean(wrong_masks, axis = 0)
+
+    plt.imshow(mean_wrongs, cmap = "gray")
+    plt.show()
+
+gt_list, seg_list = create_segmentation_masks(n_samples = 10)
+show_many_wrongs_mask(gt_list, seg_list)
+
+analyze_preds_bias(gt_list, seg_list)
