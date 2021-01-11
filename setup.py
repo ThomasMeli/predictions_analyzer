@@ -21,4 +21,4 @@ setuptools.setup(
     python_requires='>=3.7',
 )
 
-import src
+import src as predictions_analyzer
