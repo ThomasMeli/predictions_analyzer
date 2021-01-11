@@ -312,7 +312,14 @@ def analyze_preds_bias(true_mask_list,
 
     return mean_wrongs
 
-gt_list, seg_list = create_segmentation_masks(n_samples = 10)
-show_many_wrongs_mask(gt_list, seg_list)
+def show_demo():
+    """
+    Shows a demo of the segmentation mask analysis
+    with a synthetic dataset.
 
-analyze_preds_bias(gt_list, seg_list)
+    :return: None
+    """
+    gt_list, seg_list = create_segmentation_masks(n_samples = 10)
+    show_many_wrongs_mask(gt_list, seg_list)
+
+    analyze_preds_bias(gt_list, seg_list)
