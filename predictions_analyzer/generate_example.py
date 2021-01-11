@@ -20,7 +20,7 @@ import sklearn.naive_bayes
 import sklearn.neighbors
 
 import pandas as pd
-from src.analyze import Analyzer
+from predictions_analyzer.analyze import Analyzer
 
 def get_classification(random_state = 42):
     """

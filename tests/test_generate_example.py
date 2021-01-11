@@ -1,5 +1,5 @@
 
-from src.generate_example import *
+from predictions_analyzer.generate_example import *
 from sklearn.metrics import accuracy_score
 
 def get_ExClfObj():

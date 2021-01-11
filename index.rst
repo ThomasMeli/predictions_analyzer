@@ -8,12 +8,14 @@ Welcome to Predictions Analyzer's documentation!
 
 To install
 
-pip install predictions-analyzer-tpmeli
+.. code-block::
 
-from predictions-analyzer-tpmeli import segmentation_analysis
+  pip install predictions-analyzer
 
-I'm removing the '-tpmeli' from the install and module name soon and open-sourcing
-this project.
+.. code-block:: python
+
+  from predictions-analyzer import segmentation_analysis
+
 
 segmentation_analysis Examples
 ====================
