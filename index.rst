@@ -14,8 +14,7 @@ To install
 
 .. code-block:: python
 
-  from predictions-analyzer import segmentation_analysis
-
+  from predictions_analyzer.segmentation_analysis import analyze_preds_bias, show_many_wrongs_mask
 
 segmentation_analysis Examples
 ====================
