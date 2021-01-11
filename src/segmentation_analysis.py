@@ -1,4 +1,15 @@
+"""
+This module contains functions and classes that perform
+an analysis of various predictors in a segmentation analysis.
+
+Goal 1: Create a consistent working functional API
+
+Goal 2: Create an OOP Design
+
+"""
+
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 
 import random
@@ -29,7 +40,7 @@ import random
 # Which were the most different (most variance)
 
 
-#
+#exi
 # Is it systematically biased in shape, direction, size?
 
 
@@ -37,8 +48,16 @@ import random
 # https://stackoverflow.com/questions/31273652/how-to-calculate-dice-coefficient-for-measuring-accuracy-of-image-segmentation-i
 
 
-def create_segmentation_masks(random_shift = True,
-                              n_samples = 1):
+def create_segmentation_masks(random_shift: bool = True,
+                              n_samples: int = 1):
+    """
+    Generates a segmentation mask for demonstration purposes.
+
+    :param random_shift: Boolean value whether you want to create randomness or not.
+    :param n_samples: How many true/false mask pairs you want to create.
+
+    :return: true_mask(s), predicted_mask(s)
+    """
 
     all_true_masks = []
     all_predicted_masks = []
@@ -82,6 +101,7 @@ def create_segmentation_masks_dataset():
 def get_dice_coeff(truth: np.array,
                    predicted: np.array) -> float:
     """
+    Gets the dice coefficient from a true / predict pair.
 
     :param truth: The true mask.
     :param predicted: The predicted mask
@@ -102,11 +122,14 @@ def show_wrong_mask(truth,
                     predicted,
                     ):
     """
-    TODO: 
+    Show a plot of the wrong mask for comparison with
+    the true mask.
+
     :param truth:
     :param predicted:
     :return:
     """
+    #
     # Assert the shapes are the same.
 
     mask_value = 1   # This should be global-like...
@@ -140,11 +163,13 @@ def validate_lists():
 
 
 def show_many_wrongs_mask(truths,
-                          preds):
+                          preds) -> None:
     """
-    Same thing as single analysis but with MANY files.
+    Shows all true/wrong mask pairs.
 
-    :return:
+    TODO: Will have to create a limit / range otherwise it will be too big.
+
+    :return: None.  Just shows image.
     """
 
     assert len(truths) == len(preds)  # Make sure same number of images in both
@@ -190,13 +215,84 @@ def show_many_wrongs_mask(truths,
 
     plt.show()
 
-def analyze_preds_bias(true_mask_list, pred_mask_list):
+def best_models(true_masks,
+                pred_masks,
+                loss,
+                pred_names = None):
+    """
+    Placeholder function - not made yet.
+    Sorts models into best and worst given a loss function.
+
+    :true_masks: List or numpy array of true masks
+    :false_masks: List or numpy array of predicted masks.
+    :loss: Callable loss function
+    :pred_names: A list of the names of the predictors
+
+    :return: Sorted Descending List of Best Models
+    """
+    pass
+
+def find_most_diverse_preds(true_masks, pred_masks) -> pd.DataFrame:
+    """
+    Placeholder Function - Not made yet.
+
+    Finds the most diverse predictions that
+    get the most different parts of the
+    ground truth accurately regardless
+    of how accurate they are.
+
+    To find the most accurate AND diverse
+    predictors, use find_most_diverse_good_preds()
+
+    :true_masks:
+    :pred_masks:
+
+    :return: Sorted and ranked dataframe from most diverse
+    to least diverse.
+
+    """
+
+
+
+    pass
+
+
+def find_most_diverse_good_preds():
+    """
+    Finds predictions that are most similar in score
+    but least similar in predictions.
+
+    :return:
+    """
+    # Sort first by Accuracy score (true == pred).sum()... Add this to a DF
+
+    # Different_predictions = ((wrongs_mask_i == wrongs_mask_j) == False).sum()
+    # Create an N x N df (heatmap) of ((wrongs_mask_i == wrongs_mask_j) == False).sum()... add to DF
+    # 
+
+    # Create a dataframe which sorts according to
+    # [accuracy_score (descending), differences (ascending)]
+
+
+    pass
+
+def analyze_preds_bias(true_mask_list,
+                       pred_mask_list,
+                       show_report = True):
     """
     Tries to find systematic bias in the predicted vs actual
     values.
 
-    :return:
+    :true_mask_list: List of true masks
+    :pred_masks_list: List of numpy array or 3d array of predicted masks.
+
+
+    :show_report: prints output of report to screen.
+
+    :return: mean_wrongs - an image based averaging of all the deviations.
     """
+
+    # TODO: This should be a zipped pair for less errors.
 
     n_images = len(true_mask_list)
     wrong_masks = []
@@ -213,6 +309,8 @@ def analyze_preds_bias(true_mask_list, pred_mask_list):
 
     plt.imshow(mean_wrongs, cmap = "gray")
     plt.show()
+
+    return mean_wrongs
 
 gt_list, seg_list = create_segmentation_masks(n_samples = 10)
 show_many_wrongs_mask(gt_list, seg_list)

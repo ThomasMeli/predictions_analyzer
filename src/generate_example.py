@@ -1,5 +1,14 @@
 """
-Generates examples of dfs to play around with
+For Tabular_ML Predictions.
+
+This serves to simulate the data and API of the tabular_prediction_analyzer.
+
+For now, it is the main module for the tabular ML analyzer and just
+serves as an example of what is possible.
+
+Should inherit a Base Class Analyzer in the future that users can
+use with real numpy or pandas data.
+
 """
 
 import sklearn.datasets
