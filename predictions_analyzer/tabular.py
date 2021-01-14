@@ -99,12 +99,46 @@ class ClassificationAnalyzer():
             (self.ridge, "ridge"),
             (self.knn, "knn"),
             (self.nb, "nb"),
-            (self.svc, "SVC"),
+#            (self.svc, "SVC"),
             (self.dec_tree, "dec_tree"),
             (self.random_forest, "random_forest"),
             (self.extr_tree, "extr_tree"),
             (self.bagging_clf, "bagging_clf")
         ]
+
+    def show_models(self):
+        print(self.models)
+
+    def remove_model(self):
+        """
+
+        :return:
+        """
+        pass
+
+    def add_model(self, model_name:str, model_object):
+        """
+        Adds a model
+        :param model_name: classifier_name
+        :param model_obj: classifier object with .fit and .predict methods
+        :return:
+
+        """
+
+        # Is this possible?
+        # self.model_name = model_object
+
+        self.models.append((model_object, model_name))
+
+    def add_models(self):
+        """
+        Plural version of add_model
+        Eventually refactor into one function
+
+        :return:
+
+        """
+        pass
 
     def _initialize_metrics(self):
 
@@ -242,6 +276,9 @@ class ClassificationAnalyzer():
 
         return self.preds_df
 
+
+    def
+
     def within_threshold(self, threshold: float):
         """
         Finds all
@@ -330,7 +367,19 @@ class ClassificationAnalyzer():
 
 
 
+    def show_preds_report(self, save = False):
+        """
+        Show pandas styled dataframe with reds -> incorrect, greens -> correct.
 
+        Sort by number incorrect. / TODO: customize show features.
+
+        Classification Report for Each Classifier.
+
+        :param save: Save outputs to a filepath.
+
+        :return:
+        """
+        pass
 
     def do_binary_metrics(self):
         pass

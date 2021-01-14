@@ -113,6 +113,8 @@ def test_fit_class_metrics():
 
     print(ex.metrics_df)
 
+    # Assert ex.metrics_df is empty!
+
 
 def test_mean_ensemble():
     ex = get_ExClfObj()
