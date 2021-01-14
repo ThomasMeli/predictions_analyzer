@@ -276,9 +276,6 @@ class ClassificationAnalyzer():
 
         return self.preds_df
 
-
-    def
-
     def within_threshold(self, threshold: float):
         """
         Finds all
