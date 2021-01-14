@@ -208,13 +208,6 @@ class ClassificationAnalyzer():
         pass
 
 
-    def check_if_data_exists(self):
-        """
-        Before doing analytics, check if data is split and ready
-
-        :return:
-        """
-        pass
 
     def fit_models(self, verbose = True):
         """
@@ -224,8 +217,6 @@ class ClassificationAnalyzer():
 
         :return:
         """
-
-        # self.check_if_data_exists()
 
         for model, model_name in tqdm(self.models):
             if verbose:
