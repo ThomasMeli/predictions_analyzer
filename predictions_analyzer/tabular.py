@@ -17,11 +17,12 @@ import sklearn.linear_model
 import sklearn.tree
 import sklearn.ensemble
 import sklearn.metrics
-from sklearn.metrics import plot_confusion_matrix
+from sklearn.metrics import plot_confusion_matrix, classification_report
 
 import sklearn.naive_bayes
 import sklearn.neighbors
 
+import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 from predictions_analyzer.analyze import Analyzer
@@ -212,7 +213,9 @@ class ClassificationAnalyzer():
         self.X_valid = X_valid
         self.y_valid = y_valid
 
-    def split_val_train(self, verbose = True):
+    def split_val_train(self,
+                        train_fraction = 4/5,
+                        verbose = True):
         """
         Splits data into train and validation splits.
         Useful for quick processing.
@@ -225,7 +228,7 @@ class ClassificationAnalyzer():
         y = self.y
 
         length_of_X = len(X)
-        split_at_id = (length_of_X * 2) // 3
+        split_at_id = int(length_of_X * train_fraction)
 
         self.X_train = X.iloc[0:split_at_id, :]
         self.y_train = y.iloc[0:split_at_id]
@@ -415,6 +418,25 @@ class ClassificationAnalyzer():
             plt.title("Confusion Matrix For: " + model_name)
             plt.show()
 
+
+    def show_classification_report(self):
+
+        print("Starting")
+        print(self.preds_df.columns)
+
+        for col in self.preds_df.columns:
+
+            clf_report = classification_report(self.y_true, self.preds_df.loc[:,col], output_dict=True)
+            clf_report_print = classification_report(self.y_true, self.preds_df.loc[:, col])
+
+            print("\n\n" + col)
+            print(clf_report_print)
+            sns.heatmap(pd.DataFrame(clf_report).T,
+                        annot = True, vmin = 0, vmax = 1,
+                        cmap = plt.cm.Blues)
+
+            plt.title("Classification Report for: " + col)
+            plt.show()
 
     def do_binary_metrics(self):
         pass
