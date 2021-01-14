@@ -42,10 +42,7 @@ Can also be used to analyze individual predictions with show_many_wrongs_mask(tr
 
 .. image:: docs/imgs/show_many_wrongs_mask.png
 
-Tabular Analysis
-====================
-.. automodule:: tabular
-   :members:
+
 
 Segmentation Analysis
 ====================
@@ -53,6 +50,10 @@ Segmentation Analysis
 .. automodule:: segmentation_analysis
    :members:
 
+Tabular Analysis
+====================
+.. automodule:: tabular
+   :members:
 
 .. toctree::
    :maxdepth: 2

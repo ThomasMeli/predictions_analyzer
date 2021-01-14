@@ -79,7 +79,6 @@ class ClassificationAnalyzer():
         if simulate_data:
             self.generate_data()
 
-
     def _initialize_models(self):
 
         # Set random state / seeds for these
@@ -154,7 +153,11 @@ class ClassificationAnalyzer():
             return True
 
 
-    def load_data(self, X_train, y_train,
+    def load_unsplit_data(self, X, y):
+        self.X = X
+        self.y = y
+
+    def load_split_data(self, X_train, y_train,
                         X_valid, y_valid):
 
         self.X_train = X_train
@@ -162,16 +165,17 @@ class ClassificationAnalyzer():
         self.X_valid = X_valid
         self.y_valid = y_valid
 
-    def generate_data(self):
-        X, y = get_classification(random_state=self.random_state)
-        X = pd.DataFrame(X)
-        y = pd.DataFrame(y)
+    def simple_val_split(self):
+        """
+        Splits data into train and validation splits.
+        Useful for quick processing.
 
-        self.X = X
-        self.y = y
-
-        # Simple validation split at 66.6% train / 33.3%
-        # TODO: make any percent possible.
+        :param X:
+        :param y:
+        :return:
+        """
+        X = self.X
+        y = self.y
 
         length_of_X = len(X)
         split_at_id = (length_of_X * 2) // 3
@@ -183,6 +187,20 @@ class ClassificationAnalyzer():
         self.y_valid = y.iloc[split_at_id:]
 
         self.y_true = self.y_valid
+
+    def generate_data(self):
+        X, y = get_classification(random_state=self.random_state)
+        X = pd.DataFrame(X)
+        y = pd.DataFrame(y)
+
+        # TODO: Delete this to not duplicate data.  Just deal with train/val splits.
+        self.X = X
+        self.y = y
+
+        # Creates validations plits and stores in instance variables.
+        # Simple validation split at 66.6% train / 33.3%
+        # TODO: make any percent possible.
+        self.simple_val_split()
 
 
     def load_preds(self):
@@ -228,7 +246,7 @@ class ClassificationAnalyzer():
 
     def apply_ytrue(self,
                        func,
-                       df: pd.DataFrame,
+                       df: pd.DataFrame = None,
                        func_name: str = None,):
         """
         TO UPDATE: Should be private function
@@ -249,6 +267,9 @@ class ClassificationAnalyzer():
 
         # How to get this to work with pd.apply when there is varying
         # positional arguments?  args = () ?
+
+        if df is None:
+            df = self.preds_df
 
         applied_df = pd.DataFrame(columns = df.columns,
                                   index = [func_name])
@@ -445,7 +466,9 @@ class ClassificationAnalyzer():
         :return:
         """
         new_preds = func(axis=1)
-        new_preds_df = pd.DataFrame(new_preds, columns=[func_name]).astype(int)
+
+        # TODO: Check for Rounding Bias
+        new_preds_df = pd.DataFrame(new_preds, columns=[func_name]).round(decimals = 0).astype(int)
 
         # ADD: IF THERE IS ALREADY A MEAN ROW, DROP IT.
         # Code here
