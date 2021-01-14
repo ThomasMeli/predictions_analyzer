@@ -21,7 +21,7 @@ def get_titanic_obj():
     print(titanic.X.shape)
     print(titanic.y.shape)
 
-    titanic.simple_val_split()
+    titanic.split_val_train()
 
     # print(titanic.X_train.shape)
     #print(titanic.y_train.shape

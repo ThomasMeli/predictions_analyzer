@@ -1,2 +1,2 @@
-#import segmentation_analysis
-#import tabular
+import segmentation_analysis
+import tabular

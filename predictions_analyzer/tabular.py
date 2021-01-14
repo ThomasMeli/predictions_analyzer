@@ -10,6 +10,7 @@ Should inherit a Base Class Analyzer in the future that users can
 use with real numpy or pandas data.
 
 """
+from tqdm import tqdm
 
 import sklearn.datasets
 import sklearn.linear_model
@@ -165,7 +166,7 @@ class ClassificationAnalyzer():
         self.X_valid = X_valid
         self.y_valid = y_valid
 
-    def simple_val_split(self):
+    def split_val_train(self):
         """
         Splits data into train and validation splits.
         Useful for quick processing.
@@ -200,14 +201,22 @@ class ClassificationAnalyzer():
         # Creates validations plits and stores in instance variables.
         # Simple validation split at 66.6% train / 33.3%
         # TODO: make any percent possible.
-        self.simple_val_split()
+        self.split_val_train()
 
 
     def load_preds(self):
         pass
 
 
-    def fit_models(self):
+    def check_if_data_exists(self):
+        """
+        Before doing analytics, check if data is split and ready
+
+        :return:
+        """
+        pass
+
+    def fit_models(self, verbose = True):
         """
         Fit all models on the self.X and self.y data.
         Should only be used if you don't already have
@@ -216,7 +225,12 @@ class ClassificationAnalyzer():
         :return:
         """
 
-        for model, model_name in self.models:
+        check_if_data_exists()
+
+        for model, model_name in tqdm(self.models):
+            if verbose:
+                print("fitting: ", model_name)
+
             model.fit(self.X, self.y)
 
         self.is_fit = self._set_is_fit(True)
