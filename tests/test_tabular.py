@@ -1,14 +1,20 @@
 
-from predictions_analyzer.generate_example import *
+from predictions_analyzer.tabular import *
 from sklearn.metrics import accuracy_score
 
 def get_ExClfObj():
-    ex = ExampleClassificationAnalyzer()
+    ex = ClassificationAnalyzer(simulate_data=True)
 
-    ex.fit()
+    ex.fit_models()
     ex.predict()
 
     return ex
+
+def get_titanic_obj():
+    pass
+
+def fetal_obj():
+    pass
 
 def test_apply_ytrue():
     ex = get_ExClfObj()
@@ -49,7 +55,7 @@ def test_validate_classification_constructor():
     assert 1 + 1 == 2
 
 def test_ExampleAnalyzerConstructor():
-    assert ExampleClassificationAnalyzer()
+    assert ClassificationAnalyzer()
 
 def test_fit_predict():
     ex = get_ExClfObj()

@@ -52,7 +52,7 @@ class BaseClassificationAnalyzer:
 class BaseRegressionAnalyzer:
     pass
 
-class ExampleClassificationAnalyzer():
+class ClassificationAnalyzer():
     """
     FITTING
     PREDICTING
@@ -60,15 +60,27 @@ class ExampleClassificationAnalyzer():
 
     """
 
-    def __init__(self, random_state = 42):
 
-        self.X, self.y = get_classification(random_state = random_state)
 
+    def __init__(self,
+                 random_state = 42,
+                 max_depth = 7,
+                 simulate_data = False):
+
+
+        self.random_state = random_state
+        self.max_depth = max_depth
         self.is_fit = False
 
-        self.y_true = self.y
+        self._initialize_models()
+        self._initialize_metrics()
+        self._initialize_preds()
 
-        max_depth = 7  # Constrain easy overfitting
+        if simulate_data:
+            self.generate_data()
+
+
+    def _initialize_models(self):
 
         # Set random state / seeds for these
         self.logistic_reg = sklearn.linear_model.LogisticRegression()
@@ -76,11 +88,11 @@ class ExampleClassificationAnalyzer():
         self.svc = sklearn.svm.SVC()
         self.nb = sklearn.naive_bayes.GaussianNB()
         self.knn = sklearn.neighbors.KNeighborsClassifier()
-        self.dec_tree = sklearn.tree.DecisionTreeClassifier(max_depth = max_depth)
-        self.extr_tree = sklearn.ensemble.ExtraTreesClassifier(max_depth = max_depth)
-        self.random_forest = sklearn.ensemble.RandomForestClassifier(max_depth = max_depth)
-        self.bagging_clf = sklearn.ensemble.BaggingClassifier(max_features = 0.4,
-                                                              max_samples = 0.4)
+        self.dec_tree = sklearn.tree.DecisionTreeClassifier(max_depth=self.max_depth)
+        self.extr_tree = sklearn.ensemble.ExtraTreesClassifier(max_depth=self.max_depth)
+        self.random_forest = sklearn.ensemble.RandomForestClassifier(max_depth=self.max_depth)
+        self.bagging_clf = sklearn.ensemble.BaggingClassifier(max_features=0.4,
+                                                              max_samples=0.4)
         # A list of named tuples of all models to loop through.
         self.models = [
             (self.logistic_reg, "logistic_reg"),
@@ -92,8 +104,12 @@ class ExampleClassificationAnalyzer():
             (self.random_forest, "random_forest"),
             (self.extr_tree, "extr_tree"),
             (self.bagging_clf, "bagging_clf")
-                    ]
+        ]
 
+    def _initialize_metrics(self):
+
+        self.metrics_df = pd.DataFrame()
+        self.accuracy = []  # List of accuracy scores?
 
         self.binary_metrics = [
             (sklearn.metrics.accuracy_score, "accuracy_score"),
@@ -108,23 +124,16 @@ class ExampleClassificationAnalyzer():
 
         ]
 
-
-        ########## Questionable Initializations ###########
-        # Initialize here?
-        self.metrics_df = pd.DataFrame()
-
-        # Initialize here?
-        self.accuracy = []  # List of accuracy scores?
-
-        #Initialize Here
+    def _initialize_preds(self):
         self.ensembled_preds_df = pd.DataFrame()
 
         # This will be the original_preds & ensembled_preds
         self.all_preds_df = pd.DataFrame()
 
+
     def _set_is_fit(self, is_it_fit: bool):
         """
-        Sets if the estimators are fit or not
+        Sets if the estimators are fit_models or not
         :return:
         """
 
@@ -134,7 +143,7 @@ class ExampleClassificationAnalyzer():
         """
         TO DO - Make This Private
 
-        find if the models are fit or not.
+        find if the models are fit_models or not.
         This can be updated if there is a better method.
         :return:
         """
@@ -144,9 +153,47 @@ class ExampleClassificationAnalyzer():
         if self.is_fit == True:
             return True
 
-    def fit(self):
+
+    def load_data(self, X_train, y_train,
+                        X_valid, y_valid):
+
+        self.X_train = X_train
+        self.y_train = y_train
+        self.X_valid = X_valid
+        self.y_valid = y_valid
+
+    def generate_data(self):
+        X, y = get_classification(random_state=self.random_state)
+        X = pd.DataFrame(X)
+        y = pd.DataFrame(y)
+
+        self.X = X
+        self.y = y
+
+        # Simple validation split at 66.6% train / 33.3%
+        # TODO: make any percent possible.
+
+        length_of_X = len(X)
+        split_at_id = (length_of_X * 2) // 3
+
+        self.X_train = X.iloc[0:split_at_id, :]
+        self.y_train = y.iloc[0:split_at_id]
+
+        self.X_valid = X.iloc[split_at_id:, :]
+        self.y_valid = y.iloc[split_at_id:]
+
+        self.y_true = self.y_valid
+
+
+    def load_preds(self):
+        pass
+
+
+    def fit_models(self):
         """
-        Fit all models on the self.X and self.y data in __init__
+        Fit all models on the self.X and self.y data.
+        Should only be used if you don't already have
+        offline predictions done already.
 
         :return:
         """
@@ -162,7 +209,7 @@ class ExampleClassificationAnalyzer():
         self.preds_df = pd.DataFrame(self.y_true, columns = ["y_true"])
 
         for model, model_name in self.models:
-            self.preds_df[model_name] = model.predict(self.X)
+            self.preds_df[model_name] = model.predict(self.X_valid)
 
         # Drop y_true.  Just keep it in self.y_true
         self.preds_df = self.preds_df.drop("y_true", axis = 1)
@@ -177,7 +224,7 @@ class ExampleClassificationAnalyzer():
         :return:
         """
 
-        # Validate that the model is fit already.
+        # Validate that the model is fit_models already.
 
     def apply_ytrue(self,
                        func,
@@ -332,7 +379,6 @@ class ExampleClassificationAnalyzer():
         for col in trues_df.columns:
             trues_df[col] = self.y_true
 
-
         correct_mask = trues_df == self.preds_df
 
         self.correct_mask = correct_mask
@@ -341,11 +387,24 @@ class ExampleClassificationAnalyzer():
 
         self.n_correct = n_correct
 
+        print("\nSorted Hardest Samples: retrievable with the ._hardest_samples attribute")
+        print("Key is row index of sample, Value is the number of correct from all predictors")
         print(n_correct)
+
+        print("\nNumber of correct: retrievable with the ._n_correct attribute")
+        print("Index is the number of correct predictions, value is how many samples had that number of correct")
         print(n_correct.value_counts().sort_values())
 
         return n_correct
 
+
+    def cluster_wrong_answers(self):
+        """
+        Find out if wrong answers have anything in common.
+
+        :return:
+        """
+        pass
 
     def find_most_variance(self):
         """
