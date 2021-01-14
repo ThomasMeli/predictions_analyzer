@@ -226,7 +226,7 @@ class ClassificationAnalyzer():
 
         self.is_fit = self._set_is_fit(True)
 
-    def predict(self, verbose):
+    def predict(self, verbose = True):
 
         # Here or in the __init__?
         self.preds_df = pd.DataFrame(self.y_true, columns = ["y_true"])

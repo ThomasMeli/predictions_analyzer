@@ -2,7 +2,7 @@
 from predictions_analyzer.tabular import *
 from sklearn.metrics import accuracy_score
 
-classification_data_path = "./test_datasets/classification/"
+classification_data_path = "tests/test_datasets/classification/"
 
 def get_ExClfObj():
     ex = ClassificationAnalyzer(simulate_data=True)
