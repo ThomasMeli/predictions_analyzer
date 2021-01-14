@@ -235,12 +235,15 @@ class ClassificationAnalyzer():
 
         self.is_fit = self._set_is_fit(True)
 
-    def predict(self):
+    def predict(self, verbose):
 
         # Here or in the __init__?
         self.preds_df = pd.DataFrame(self.y_true, columns = ["y_true"])
 
-        for model, model_name in self.models:
+        for model, model_name in tqdm(self.models):
+            if verbose:
+                print("Predicting with: ", model_name)
+
             self.preds_df[model_name] = model.predict(self.X_valid)
 
         # Drop y_true.  Just keep it in self.y_true
