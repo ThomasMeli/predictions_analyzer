@@ -225,7 +225,7 @@ class ClassificationAnalyzer():
         :return:
         """
 
-        check_if_data_exists()
+        # self.check_if_data_exists()
 
         for model, model_name in tqdm(self.models):
             if verbose:
