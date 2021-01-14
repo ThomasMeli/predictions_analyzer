@@ -2,7 +2,7 @@
 from predictions_analyzer.tabular import *
 from sklearn.metrics import accuracy_score
 
-classification_data_path = "test_datasets/classification/"
+classification_data_path = "./test_datasets/classification/"
 
 def get_ExClfObj():
     ex = ClassificationAnalyzer(simulate_data=True)
@@ -210,6 +210,11 @@ def test_find_hardest_samples():
 
         obj.find_hardest_samples()
 
-    # Assert all values in self.trues_df?
+        # Assert that obj.preds_df
+
+        # Assert that not all outputs are 0
+        # Assert that the output of n_correct is not 0 len(X)
+
+        # Assert all values in self.trues_df?
 
 
