@@ -116,6 +116,9 @@ class ClassificationAnalyzer():
         """
         pass
 
+    def update_model(self):
+        pass
+
     def add_model(self, model_name:str, model_object):
         """
         Adds a model
@@ -139,6 +142,12 @@ class ClassificationAnalyzer():
 
         """
         pass
+
+    def remove_all_models(self):
+        pass
+
+    def restore_baseline_models(self):
+        self._initialize_models()
 
     def _initialize_metrics(self):
 
@@ -200,7 +209,7 @@ class ClassificationAnalyzer():
         self.X_valid = X_valid
         self.y_valid = y_valid
 
-    def split_val_train(self):
+    def split_val_train(self, verbose = True):
         """
         Splits data into train and validation splits.
         Useful for quick processing.
@@ -222,6 +231,8 @@ class ClassificationAnalyzer():
         self.y_valid = y.iloc[split_at_id:]
 
         self.y_true = self.y_valid
+
+
 
     def generate_data(self):
         X, y = get_classification(random_state=self.random_state)
@@ -256,20 +267,28 @@ class ClassificationAnalyzer():
             if verbose:
                 print("fitting: ", model_name)
 
-            model.fit(self.X, self.y)
+            model.fit(self.X_train, self.y_train)
 
         self.is_fit = self._set_is_fit(True)
 
     def predict(self, verbose = True):
 
+
         # Here or in the __init__?
         self.preds_df = pd.DataFrame(self.y_true, columns = ["y_true"])
+
+        # TODO: Check if model split_val_train has been called
+        # Here
 
         for model, model_name in tqdm(self.models):
             if verbose:
                 print("Predicting with: ", model_name)
 
+            # TODO: Add Exception handling to predict doesn't stop.
+
             self.preds_df[model_name] = model.predict(self.X_valid)
+
+            # If verbose - Print Time it took.  Add to "speed_df"
 
         # Drop y_true.  Just keep it in self.y_true
         self.preds_df = self.preds_df.drop("y_true", axis = 1)
