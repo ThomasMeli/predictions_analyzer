@@ -17,9 +17,12 @@ import sklearn.linear_model
 import sklearn.tree
 import sklearn.ensemble
 import sklearn.metrics
+from sklearn.metrics import plot_confusion_matrix
+
 import sklearn.naive_bayes
 import sklearn.neighbors
 
+import matplotlib.pyplot as plt
 import pandas as pd
 from predictions_analyzer.analyze import Analyzer
 
@@ -397,6 +400,22 @@ class ClassificationAnalyzer():
         """
         pass
 
+
+    def show_confusion_matrix(self, verbose = True):
+
+        for model, model_name in tqdm(self.models):
+
+            # TODO: Add Exception handling to predict doesn't stop.
+
+            disp = plot_confusion_matrix(model,
+                                  self.X_valid,
+                                  self.y_true,
+                                  cmap = plt.cm.Blues)
+
+            plt.title("Confusion Matrix For: " + model_name)
+            plt.show()
+
+
     def do_binary_metrics(self):
         pass
 
@@ -490,7 +509,6 @@ class ClassificationAnalyzer():
         print(n_correct.value_counts().sort_values())
 
         return n_correct
-
 
     def cluster_wrong_answers(self):
         """

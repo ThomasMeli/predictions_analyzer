@@ -2,7 +2,7 @@
 from predictions_analyzer.tabular import *
 from sklearn.metrics import accuracy_score
 
-classification_data_path = "tests/test_datasets/classification/"
+classification_data_path = "./test_datasets/classification/"
 
 def get_ExClfObj():
     ex = ClassificationAnalyzer(simulate_data=True)
@@ -155,6 +155,17 @@ def test_mode_ensemble():
     assert ex.ensembled_preds_df.empty != True
 
     # Assert there is only one mean column!
+
+def test_show_confusion_matrix():
+    ex = get_ExClfObj()
+    titanic = get_titanic_obj()
+
+    test_objects = [("simulated", ex), ("titanic", titanic)]
+
+    for name, obj in test_objects:
+        print("\nTesting: ", name, " dataset")
+
+        obj.show_confusion_matrix()
 
 def test_all_stat_ensembled_pred_metrics():
     ex = get_ExClfObj()
