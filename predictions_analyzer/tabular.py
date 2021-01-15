@@ -13,6 +13,10 @@ use with real numpy or pandas data.
 from tqdm import tqdm
 from time import time
 
+from lightgbm import LGBMClassifier
+import xgboost as xgb
+
+import sklearn.dummy
 import sklearn.datasets
 import sklearn.linear_model
 import sklearn.tree
@@ -71,10 +75,13 @@ class ClassificationAnalyzer():
 
     def __init__(self,
                  random_state = 42,
-                 max_depth = 7,
+                 max_depth = 5,
+                 n_estimators = 100,
+                 use_subsample = 0.8,
                  simulate_data = False):
 
-
+        self.n_estimators = n_estimators
+        self.use_subsample = use_subsample
         self.random_state = random_state
         self.max_depth = max_depth
         self.is_fit = False
@@ -88,17 +95,34 @@ class ClassificationAnalyzer():
 
     def _initialize_models(self):
 
+        self.dummy = sklearn.dummy.DummyClassifier(strategy = "prior")
+
         # Set random state / seeds for these
         self.logistic_reg = sklearn.linear_model.LogisticRegression()
         self.ridge = sklearn.linear_model.RidgeClassifier()
         self.svc = sklearn.svm.SVC()
+
         self.nb = sklearn.naive_bayes.GaussianNB()
         self.knn = sklearn.neighbors.KNeighborsClassifier()
+
         self.dec_tree = sklearn.tree.DecisionTreeClassifier(max_depth=self.max_depth)
         self.extr_tree = sklearn.ensemble.ExtraTreesClassifier(max_depth=self.max_depth)
         self.random_forest = sklearn.ensemble.RandomForestClassifier(max_depth=self.max_depth)
         self.bagging_clf = sklearn.ensemble.BaggingClassifier(max_features=0.4,
-                                                              max_samples=0.4)
+                                                              max_samples=self.use_subsample)
+
+        self.xgb_clf = xgb.XGBClassifier(
+            n_estimators = self.n_estimators,
+            max_depth = self.max_depth,
+            subsample = self.use_subsample,
+            tree_method="approx"
+                                         )
+
+        self.lgb_clf = LGBMClassifier(
+            n_estimators=self.n_estimators,
+            max_depth=self.max_depth,
+            num_leaves=64
+        )
 
         # TODO: Organize into model types so each model can .fit on data made for it.
         # Logistic, Linear classifiers. SVC. KNN.
@@ -120,7 +144,9 @@ class ClassificationAnalyzer():
             (self.nb, "nb"),
             (self.dec_tree, "dec_tree"),
             (self.extr_tree, "extr_tree"),
-            (self.bagging_clf, "bagging_clf")
+            (self.bagging_clf, "bagging_clf"),
+            (self.xgb_clf, "xgb_clf"),
+            (self.lgb_clf, "lgb_clf")
         ]
 
     def show_models(self):
@@ -226,6 +252,15 @@ class ClassificationAnalyzer():
         self.X_valid = X_valid
         self.y_valid = y_valid
 
+
+    def _update_validation_ready_models(self):
+        """
+        Models with early stopping should include validation sets.
+
+        :return:
+        """
+        pass
+
     def split_val_train(self,
                         train_fraction = 4/5,
                         method = "time_series",
@@ -266,6 +301,12 @@ class ClassificationAnalyzer():
             pass
 
         self.y_true = self.y_valid
+        self._update_validation_ready_models()
+
+
+
+
+
 
     def cross_validate(self):
         pass
