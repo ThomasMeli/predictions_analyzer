@@ -19,6 +19,7 @@ import sklearn.tree
 import sklearn.ensemble
 import sklearn.metrics
 from sklearn.metrics import plot_confusion_matrix, classification_report
+import sklearn.model_selection
 
 import sklearn.naive_bayes
 import sklearn.neighbors
@@ -238,22 +239,33 @@ class ClassificationAnalyzer():
         :return:
         """
 
-        # TODO: Add stochastic and time-series variants.
         X = self.X
         y = self.y
 
         length_of_X = len(X)
-        split_at_id = int(length_of_X * train_fraction)
 
-        self.X_train = X.iloc[0:split_at_id, :]
-        self.y_train = y.iloc[0:split_at_id]
+        if method == "time_series":
+            # TODO: Add stochastic and time-series variants.
 
-        self.X_valid = X.iloc[split_at_id:, :]
-        self.y_valid = y.iloc[split_at_id:]
+            split_at_id = int(length_of_X * train_fraction)
+
+            self.X_train = X.iloc[0:split_at_id, :]
+            self.y_train = y.iloc[0:split_at_id]
+
+            self.X_valid = X.iloc[split_at_id:, :]
+            self.y_valid = y.iloc[split_at_id:]
+
+        elif method == "stochastic":
+            self.X_train, self.X_valid, self.y_train, self.y_valid = sklearn.model_selection.train_test_split(
+                X, y, train_size = train_fraction,
+                stratify = y,
+                random_state=self.random_state
+            )
+
+        else:
+            pass
 
         self.y_true = self.y_valid
-
-
 
     def cross_validate(self):
         pass

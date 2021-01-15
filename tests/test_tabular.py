@@ -33,6 +33,30 @@ def get_titanic_obj():
 
     return titanic
 
+def get_titanic_obj_stochastic_splits():
+    titanic = ClassificationAnalyzer(simulate_data=False)
+    X = pd.read_csv(classification_data_path + "titanic.csv")
+    y = X.pop("Survived")
+
+    titanic.load_unsplit_data(X, y)
+    print(titanic.X.shape)
+    print(titanic.y.shape)
+
+    titanic.split_val_train(method = "stochastic")
+
+    # print(titanic.X_train.shape)
+    # print(titanic.y_train.shape
+    # print(titanic.X_valid.shape)
+    # print(titanic.y_valid.shape)
+
+    titanic.fit_models()
+    titanic.predict()
+
+    return titanic
+
+def test_titanic_stochastic():
+    titanic_stochastic = get_titanic_obj_stochastic_splits()
+
 def fetal_obj():
     pass
 
@@ -59,8 +83,10 @@ def test_apply_ytrue():
 def test_add_to_metrics_from_ytrue_and_preds_df():
     ex = get_ExClfObj()
     titanic = get_titanic_obj()
+    titanic_stochastic = get_titanic_obj_stochastic_splits()
 
-    test_objects = [("simulated", ex), ("titanic", titanic)]
+    test_objects = [("simulated", ex), ("titanic", titanic),
+                    ("titanic_stochastic", titanic_stochastic)]
 
     for name, obj in test_objects:
         print("\nTesting: ", name, " dataset")
@@ -243,6 +269,16 @@ def test_find_hardest_samples():
 
 
 def test_show_all_reports():
+    ex = get_ExClfObj()
+    titanic = get_titanic_obj()
+
+    test_objects = [("simulated", ex), ("titanic", titanic)]
+
+    for name, obj in test_objects:
+        print("\nTesting: ", name, " dataset")
+        obj.show_all_reports()
+
+def test_valid_split_random():
     ex = get_ExClfObj()
     titanic = get_titanic_obj()
 
