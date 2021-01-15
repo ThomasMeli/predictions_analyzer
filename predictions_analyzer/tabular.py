@@ -11,6 +11,7 @@ use with real numpy or pandas data.
 
 """
 from tqdm import tqdm
+from time import time
 
 import sklearn.datasets
 import sklearn.linear_model
@@ -97,6 +98,16 @@ class ClassificationAnalyzer():
         self.random_forest = sklearn.ensemble.RandomForestClassifier(max_depth=self.max_depth)
         self.bagging_clf = sklearn.ensemble.BaggingClassifier(max_features=0.4,
                                                               max_samples=0.4)
+
+        # TODO: Organize into model types so each model can .fit on data made for it.
+        # Logistic, Linear classifiers. SVC. KNN.
+        self.models_that_need_scaled_data = []
+
+        self.tree_based_models = []
+
+        # Don't use these with big-data.   KNN or SVC.
+        self.models_that_dont_scale_well = []
+
         # A list of named tuples of all models to loop through.
         self.models = [
             (self.logistic_reg, "logistic_reg"),
@@ -215,6 +226,7 @@ class ClassificationAnalyzer():
 
     def split_val_train(self,
                         train_fraction = 4/5,
+                        method = "time_series",
                         verbose = True):
         """
         Splits data into train and validation splits.
@@ -224,6 +236,8 @@ class ClassificationAnalyzer():
         :param y:
         :return:
         """
+
+        # TODO: Add stochastic and time-series variants.
         X = self.X
         y = self.y
 
@@ -239,6 +253,9 @@ class ClassificationAnalyzer():
         self.y_true = self.y_valid
 
 
+
+    def cross_validate(self):
+        pass
 
     def generate_data(self):
         X, y = get_classification(random_state=self.random_state)
@@ -262,39 +279,63 @@ class ClassificationAnalyzer():
 
     def fit_models(self, verbose = True):
         """
-        Fit all models on the self.X and self.y data.
+        Fit all models on the self.X_train and self.y_train data.
         Should only be used if you don't already have
         offline predictions done already.
 
         :return:
         """
 
-        for model, model_name in tqdm(self.models):
-            if verbose:
-                print("fitting: ", model_name)
+        self.model_fit_speeds = pd.DataFrame()
+
+        for model, model_name in self.models:
+
+            time_start = time()
 
             model.fit(self.X_train, self.y_train)
+
+            time_finish = time()
+            time_to_fit = round(time_finish - time_start, 4)
+
+            if verbose:
+                print("fit:", model_name, time_to_fit, "seconds")
+
+            self.model_fit_speeds[model_name] = time_to_fit
+
 
         self.is_fit = self._set_is_fit(True)
 
     def predict(self, verbose = True):
+        """
+        Predict on the self.X_valid and self.y_valid and save time metrics.
+        Must run or load a validation split and .fit_models first.
 
+        :param verbose:
+        :return:
+        """
 
         # Here or in the __init__?
         self.preds_df = pd.DataFrame(self.y_true, columns = ["y_true"])
 
         # TODO: Check if model split_val_train has been called
-        # Here
 
-        for model, model_name in tqdm(self.models):
-            if verbose:
-                print("Predicting with: ", model_name)
+        self.model_pred_speeds = pd.DataFrame()
+
+        for model, model_name in self.models:
+
+            time_start = time()
 
             # TODO: Add Exception handling to predict doesn't stop.
 
             self.preds_df[model_name] = model.predict(self.X_valid)
 
-            # If verbose - Print Time it took.  Add to "speed_df"
+            time_finish = time()
+            time_to_fit = round(time_finish - time_start, 4)
+
+            if verbose:
+                print("predicted with:", model_name, "took ", time_to_fit, "seconds")
+
+            self.model_pred_speeds[model_name] = time_to_fit
 
         # Drop y_true.  Just keep it in self.y_true
         self.preds_df = self.preds_df.drop("y_true", axis = 1)
