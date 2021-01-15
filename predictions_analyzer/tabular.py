@@ -106,17 +106,18 @@ class ClassificationAnalyzer():
         self.tree_based_models = []
 
         # Don't use these with big-data.   KNN or SVC.
-        self.models_that_dont_scale_well = []
+        self.models_that_dont_scale_well = [
+            (self.svc, "SVC"),
+            (self.knn, "knn"),
+            (self.random_forest, "random_forest")
+        ]
 
         # A list of named tuples of all models to loop through.
         self.models = [
             (self.logistic_reg, "logistic_reg"),
             (self.ridge, "ridge"),
-            (self.knn, "knn"),
             (self.nb, "nb"),
-#            (self.svc, "SVC"),
             (self.dec_tree, "dec_tree"),
-            (self.random_forest, "random_forest"),
             (self.extr_tree, "extr_tree"),
             (self.bagging_clf, "bagging_clf")
         ]
@@ -476,6 +477,34 @@ class ClassificationAnalyzer():
             plt.title("Classification Report for: " + col)
             plt.show()
 
+
+    def explore_feature_distributions(self):
+        pass
+
+    def explore_statistics_for_hardest(self):
+        """
+        This function checks out the z-scores
+        and other important statistics
+        for each of the hardest
+
+        :return:
+        """
+        pass
+
+    def explore_features_for_hardest(self):
+        """
+        Checks out each feature and color codes the
+        'hardest' to categorize - seeing if the harder
+        samples have anything in common
+        feature-wise.
+
+
+        Displays feature distributions with sample
+        difficulty coded ordinally.
+
+        :return:
+        """
+        pass
     def show_best_recall(self):
         pass
 
