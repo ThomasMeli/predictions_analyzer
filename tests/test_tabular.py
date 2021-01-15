@@ -242,3 +242,12 @@ def test_find_hardest_samples():
         # Assert all values in self.trues_df?
 
 
+def test_show_all_reports():
+    ex = get_ExClfObj()
+    titanic = get_titanic_obj()
+
+    test_objects = [("simulated", ex), ("titanic", titanic)]
+
+    for name, obj in test_objects:
+        print("\nTesting: ", name, " dataset")
+        obj.show_all_reports()

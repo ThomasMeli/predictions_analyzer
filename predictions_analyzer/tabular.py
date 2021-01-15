@@ -421,9 +421,6 @@ class ClassificationAnalyzer():
 
     def show_classification_report(self):
 
-        print("Starting")
-        print(self.preds_df.columns)
-
         for col in self.preds_df.columns:
 
             clf_report = classification_report(self.y_true, self.preds_df.loc[:,col], output_dict=True)
@@ -438,9 +435,55 @@ class ClassificationAnalyzer():
             plt.title("Classification Report for: " + col)
             plt.show()
 
-    def do_binary_metrics(self):
+    def show_best_recall(self):
         pass
 
+    def show_best_precision(self):
+        pass
+
+    def show_best_f1(self):
+        pass
+
+    def show_best_on_hardest_samples(self):
+        pass
+
+    def show_confidence_on_hardest_samples(self):
+        pass
+
+    def get_best_on_particular_rows(self):
+        pass
+
+    def ensemble_analysis(self):
+        # Which ensemble gives the best results?
+
+        # Create different combinations of all the preds
+        # Add the ensembles to the confusion matrices / classification reports!
+        # Voting classifiers
+        # Stacking Classifiers
+        # Mean and Median Classifiers
+
+        pass
+
+    def show_all_reports(self):
+
+        for col, model in zip(self.preds_df.columns, self.models):
+
+            assert(model[1] == col)  # The column name must equal the model name
+
+            # plt.subplots - Confusion matrix and Classification report
+            # Speed
+
+        # Overall Reports:
+        # Best Precision
+        # Best Recall
+        # Best f1 Score.
+        # Best Accuracy.
+
+        # Diversity Analysis.
+
+
+    def do_binary_metrics(self):
+        pass
 
     def get_num_wrong_right(self):
         """
@@ -518,19 +561,29 @@ class ClassificationAnalyzer():
 
         self.correct_mask = correct_mask
 
-        n_correct = correct_mask.sum(axis = 1).sort_values()
+        n_correct = correct_mask.sum(axis = 1)
 
-        self.n_correct = n_correct
+        mask_with_margins = correct_mask.insert(0, "n_clf_correct", n_correct)
 
-        print("\nSorted Hardest Samples: retrievable with the ._hardest_samples attribute")
+        self.correct_mask_with_margins_ = mask_with_margins
+
+        n_correct = n_correct.sort_values()
+        self.hardest_samples_ = n_correct
+
+        print("\nSorted Hardest Samples: retrievable with the .hardest_samples_ attribute")
         print("Key is row index of sample, Value is the number of correct from all predictors")
         print(n_correct)
 
-        print("\nNumber of correct: retrievable with the ._n_correct attribute")
-        print("Index is the number of correct predictions, value is how many samples had that number of correct")
-        print(n_correct.value_counts().sort_values())
+        self.n_freq_correct = n_correct.value_counts().sort_values()
 
-        return n_correct
+        print("\nNumber of correct: retrievable with the .n_freq_correct attribute_")
+        print("Index is the number of correct predictions, value is how many samples had that number of correct")
+        print(self.n_freq_correct)
+
+        print("\nFull Mask: retrievable with the .correct_mask_with_margins_ attribute")
+        print(mask_with_margins)
+
+        print(self.correct_mask)
 
     def cluster_wrong_answers(self):
         """
