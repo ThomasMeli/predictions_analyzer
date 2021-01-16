@@ -328,10 +328,16 @@ class BaseClassificationAnalyzer(BaseAnalyzer):
         self.knn = sklearn.neighbors.KNeighborsClassifier()
 
         self.dec_tree = sklearn.tree.DecisionTreeClassifier(max_depth=self.max_depth)
-        self.extr_tree = sklearn.ensemble.ExtraTreesClassifier(max_depth=self.max_depth)
-        self.random_forest = sklearn.ensemble.RandomForestClassifier(max_depth=self.max_depth)
+
+        self.extr_tree = sklearn.ensemble.ExtraTreesClassifier(max_depth=self.max_depth,
+                                                              n_jobs = self.n_jobs)
+
+        self.random_forest = sklearn.ensemble.RandomForestClassifier(max_depth=self.max_depth,
+                                                              n_jobs = self.n_jobs)
+
         self.bagging_clf = sklearn.ensemble.BaggingClassifier(max_features=0.8,
-                                                              max_samples=self.use_subsample)
+                                                              max_samples=self.use_subsample,
+                                                              n_jobs = self.n_jobs)
 
         self.xgb_clf = xgb.XGBClassifier(
             n_estimators=self.n_estimators,
