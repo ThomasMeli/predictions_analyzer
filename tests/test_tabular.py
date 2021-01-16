@@ -233,6 +233,17 @@ def test_all_stat_ensembled_pred_metrics():
         # Assert no NaNs are in the predictions.
         assert obj.ensembled_preds_df.isna().sum().sum() == 0
 
+def test_show_models():
+    ex = get_ExClfObj()
+    titanic = get_titanic_obj()
+
+    test_objects = [("simulated", ex), ("titanic", titanic)]
+
+    for name, obj in test_objects:
+        print("\nTesting: ", name, " dataset")
+
+        obj.show_models()
+
 def test_ensembled_preds_metrics_exist():
     ex = get_ExClfObj()
     titanic = get_titanic_obj()

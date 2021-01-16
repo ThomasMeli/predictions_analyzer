@@ -33,6 +33,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from predictions_analyzer.analyze import Analyzer
 
+from itertools import combinations
+
 def get_classification(random_state = 42):
     """
     Creates a classification dataset.
@@ -57,125 +59,17 @@ def get_classification(random_state = 42):
 
     return X, y
 
-class BaseClassificationAnalyzer:
-    pass
-
-class BaseRegressionAnalyzer:
-    pass
-
-class ClassificationAnalyzer():
+class BaseAnalyzer:
     """
-    FITTING
-    PREDICTING
-    ANALYZING should be clearly differentiated and encapsulated things.
+    Contains methods common to both regression and classification
+    analyzers.
 
     """
-
-
-
-    def __init__(self,
-                 random_state = 42,
-                 max_depth = 5,
-                 n_estimators = 100,
-                 use_subsample = 0.8,
-                 n_jobs = -1,
-                 simulate_data = False):
-
-        self.random_state = random_state
-
-        self.n_estimators = n_estimators
-        self.use_subsample = use_subsample
-
-        self.max_depth = max_depth
-        self.is_fit = False
-        self.n_jobs = n_jobs
-
-        self._initialize_models()
-        self._initialize_metrics()
-        self._initialize_preds()
-
-        if simulate_data:
-            self.generate_data()
-
-    def _initialize_models(self):
-
-        self.dummy = sklearn.dummy.DummyClassifier(strategy = "prior")
-
-        # Set random state / seeds for these
-
-        self.logistic_reg = sklearn.linear_model.LogisticRegression(penalty = "none",
-                                                                    n_jobs = self.n_jobs)
-
-        self.logistic_l1 = sklearn.linear_model.LogisticRegression(penalty = "l1",
-                                                                   solver = "saga",
-                                                                   n_jobs=self.n_jobs)
-
-        self.logistic_l2 = sklearn.linear_model.LogisticRegression(penalty = "l2",
-                                                                   solver = "saga",
-                                                                   n_jobs=self.n_jobs)
-
-        self.logistic_elastic = sklearn.linear_model.LogisticRegression(penalty = "elasticnet",
-                                                                        solver = "saga",
-                                                                        n_jobs=self.n_jobs)
-
-        self.ridge = sklearn.linear_model.RidgeClassifier(normalize = True)
-
-        self.svc = sklearn.svm.SVC()
-
-        self.nb = sklearn.naive_bayes.GaussianNB()
-        self.nb_complement = sklearn.naive_bayes.ComplementNB()
-
-        self.knn = sklearn.neighbors.KNeighborsClassifier()
-
-        self.dec_tree = sklearn.tree.DecisionTreeClassifier(max_depth=self.max_depth)
-        self.extr_tree = sklearn.ensemble.ExtraTreesClassifier(max_depth=self.max_depth)
-        self.random_forest = sklearn.ensemble.RandomForestClassifier(max_depth=self.max_depth)
-        self.bagging_clf = sklearn.ensemble.BaggingClassifier(max_features=0.8,
-                                                              max_samples=self.use_subsample)
-
-        self.xgb_clf = xgb.XGBClassifier(
-            n_estimators = self.n_estimators,
-            max_depth = self.max_depth,
-            subsample = self.use_subsample,
-            tree_method="approx"
-                                         )
-
-        self.lgb_clf = LGBMClassifier(
-            n_estimators=self.n_estimators,
-            max_depth=self.max_depth,
-            num_leaves=64
-        )
-
-        # TODO: Organize into model types so each model can .fit on data made for it.
-        # Logistic, Linear classifiers. SVC. KNN.
-        self.models_that_need_scaled_data = []
-
-        self.tree_based_models = []
-
-        # Don't use these with big-data.   KNN or SVC.
-        self.models_that_dont_scale_well = [
-            (self.svc, "SVC"),
-            (self.knn, "knn"),
-            (self.random_forest, "random_forest")
-        ]
-
-        # A list of named tuples of all models to loop through.
-        self.models = [
-            (self.dummy, "dummy_prior_clf"),
-            (self.logistic_reg, "logistic_reg"),
-            (self.logistic_l1, "logistic_l1"),
-            (self.logistic_l2, "logistic_l2"),
-            (self.ridge, "ridge"),
-            (self.nb, "nb"),
-            (self.dec_tree, "dec_tree"),
-            (self.extr_tree, "extr_tree"),
-            (self.bagging_clf, "bagging_clf"),
-            (self.xgb_clf, "xgb_clf"),
-            (self.lgb_clf, "lgb_clf")
-        ]
 
     def show_models(self):
-        print(self.models)
+        for model in self.models:
+            print("\n")
+            print(model)
 
     def remove_model(self):
         """
@@ -217,30 +111,11 @@ class ClassificationAnalyzer():
     def restore_baseline_models(self):
         self._initialize_models()
 
-    def _initialize_metrics(self):
-
-        self.metrics_df = pd.DataFrame()
-        self.accuracy = []  # List of accuracy scores?
-
-        self.binary_metrics = [
-            (sklearn.metrics.accuracy_score, "accuracy_score"),
-            (sklearn.metrics.roc_auc_score, "roc_auc_score")
-        ]
-
-        self.binary_or_multiclass_metrics = [
-            (sklearn.metrics.precision_score, "precision_score"),
-            (sklearn.metrics.recall_score, "recall_score"),
-            (sklearn.metrics.f1_score, "f1_score"),
-            (sklearn.metrics.log_loss, "log_loss")
-
-        ]
-
     def _initialize_preds(self):
         self.ensembled_preds_df = pd.DataFrame()
 
         # This will be the original_preds & ensembled_preds
         self.all_preds_df = pd.DataFrame()
-
 
     def _set_is_fit(self, is_it_fit: bool):
         """
@@ -264,7 +139,6 @@ class ClassificationAnalyzer():
         if self.is_fit == True:
             return True
 
-
     def load_unsplit_data(self, X, y):
         self.X = X
         self.y = y
@@ -276,87 +150,6 @@ class ClassificationAnalyzer():
         self.y_train = y_train
         self.X_valid = X_valid
         self.y_valid = y_valid
-
-
-    def _update_validation_ready_models(self):
-        """
-        Models with early stopping should include validation sets.
-
-        :return:
-        """
-        pass
-
-    def split_val_train(self,
-                        train_fraction = 4/5,
-                        method = "stochastic",
-                        verbose = True):
-        """
-        Splits data into train and validation splits.
-        Useful for quick processing.
-
-        :param X:
-        :param y:
-        :param: method ("stochastic", "time_series")
-        :return:
-        """
-
-        X = self.X
-        y = self.y
-
-        length_of_X = len(X)
-
-        if method == "stochastic":
-            self.X_train, self.X_valid, self.y_train, self.y_valid = sklearn.model_selection.train_test_split(
-                X, y, train_size = train_fraction,
-                stratify = y,
-                random_state=self.random_state,
-                shuffle = True
-            )
-
-        if method == "time_series":
-            # TODO: Add stochastic and time-series variants.
-
-            split_at_id = int(length_of_X * train_fraction)
-
-            self.X_train = X.iloc[0:split_at_id, :]
-            self.y_train = y.iloc[0:split_at_id]
-
-            self.X_valid = X.iloc[split_at_id:, :]
-            self.y_valid = y.iloc[split_at_id:]
-
-
-
-
-        self.y_true = self.y_valid
-        self._update_validation_ready_models()
-
-
-
-
-
-
-    def cross_validate(self):
-        pass
-
-    def generate_data(self):
-        X, y = get_classification(random_state=self.random_state)
-        X = pd.DataFrame(X)
-        y = pd.DataFrame(y)
-
-        # TODO: Delete this to not duplicate data.  Just deal with train/val splits.
-        self.X = X
-        self.y = y
-
-        # Creates validations plits and stores in instance variables.
-        # Simple validation split at 66.6% train / 33.3%
-        # TODO: make any percent possible.
-        self.split_val_train()
-
-
-    def load_preds(self):
-        pass
-
-
 
     def fit_models(self, verbose = True):
         """
@@ -423,16 +216,6 @@ class ClassificationAnalyzer():
 
         return self.preds_df
 
-    def within_threshold(self, threshold: float):
-        """
-        Finds all
-        :param threshold: float - Find all outputs that are within a threshold.
-
-        :return:
-        """
-
-        # Validate that the model is fit_models already.
-
     def apply_ytrue(self,
                        func,
                        df: pd.DataFrame = None,
@@ -467,7 +250,6 @@ class ClassificationAnalyzer():
             applied_df[col] = func(self.y_true, df[col])
 
         return applied_df
-
 
     def add_to_metrics_from_ytrue_and_preds_df(self,
                                                func,
@@ -508,6 +290,225 @@ class ClassificationAnalyzer():
             self.metrics_df = pd.concat([self.metrics_df, new_ensembled_metric])
 
             assert self.metrics_df.empty != True  # Has metric been added to self.metrics_df?
+
+
+class BaseClassificationAnalyzer(BaseAnalyzer):
+    """
+    Base class for all Classification Analyzers
+
+    """
+
+    def _initialize_models(self):
+        self.dummy = sklearn.dummy.DummyClassifier(strategy="prior")
+
+        # Set random state / seeds for these
+
+        self.logistic_reg = sklearn.linear_model.LogisticRegression(penalty="none",
+                                                                    n_jobs=self.n_jobs)
+
+        self.logistic_l1 = sklearn.linear_model.LogisticRegression(penalty="l1",
+                                                                   solver="saga",
+                                                                   n_jobs=self.n_jobs)
+
+        self.logistic_l2 = sklearn.linear_model.LogisticRegression(penalty="l2",
+                                                                   solver="saga",
+                                                                   n_jobs=self.n_jobs)
+
+        self.logistic_elastic = sklearn.linear_model.LogisticRegression(penalty="elasticnet",
+                                                                        solver="saga",
+                                                                        n_jobs=self.n_jobs)
+
+        self.ridge = sklearn.linear_model.RidgeClassifier(normalize=True)
+
+        self.svc = sklearn.svm.SVC()
+
+        self.nb = sklearn.naive_bayes.GaussianNB()
+        self.nb_complement = sklearn.naive_bayes.ComplementNB()
+
+        self.knn = sklearn.neighbors.KNeighborsClassifier()
+
+        self.dec_tree = sklearn.tree.DecisionTreeClassifier(max_depth=self.max_depth)
+        self.extr_tree = sklearn.ensemble.ExtraTreesClassifier(max_depth=self.max_depth)
+        self.random_forest = sklearn.ensemble.RandomForestClassifier(max_depth=self.max_depth)
+        self.bagging_clf = sklearn.ensemble.BaggingClassifier(max_features=0.8,
+                                                              max_samples=self.use_subsample)
+
+        self.xgb_clf = xgb.XGBClassifier(
+            n_estimators=self.n_estimators,
+            max_depth=self.max_depth,
+            subsample=self.use_subsample,
+            tree_method="approx"
+        )
+
+        self.lgb_clf = LGBMClassifier(
+            n_estimators=self.n_estimators,
+            max_depth=self.max_depth,
+            num_leaves=64
+        )
+
+        # TODO: Organize into model types so each model can .fit on data made for it.
+        # Logistic, Linear classifiers. SVC. KNN.
+        self.models_that_need_scaled_data = []
+
+        self.tree_based_models = []
+
+        # Don't use these with big-data.   KNN or SVC.
+        self.models_that_dont_scale_well = [
+            (self.svc, "SVC"),
+            (self.knn, "knn"),
+            (self.random_forest, "random_forest")
+        ]
+
+        # A list of named tuples of all models to loop through.
+        self.models = [
+            (self.dummy, "dummy_prior_clf"),
+            (self.logistic_reg, "logistic_reg"),
+            (self.logistic_l1, "logistic_l1"),
+            (self.logistic_l2, "logistic_l2"),
+            (self.ridge, "ridge"),
+            (self.nb, "nb"),
+            (self.dec_tree, "dec_tree"),
+            (self.extr_tree, "extr_tree"),
+            (self.bagging_clf, "bagging_clf"),
+            (self.xgb_clf, "xgb_clf"),
+            (self.lgb_clf, "lgb_clf")
+        ]
+
+    def _initialize_metrics(self):
+
+        self.metrics_df = pd.DataFrame()
+        self.accuracy = []  # List of accuracy scores?
+
+        self.binary_metrics = [
+            (sklearn.metrics.accuracy_score, "accuracy_score"),
+            (sklearn.metrics.roc_auc_score, "roc_auc_score")
+        ]
+
+        self.binary_or_multiclass_metrics = [
+            (sklearn.metrics.precision_score, "precision_score"),
+            (sklearn.metrics.recall_score, "recall_score"),
+            (sklearn.metrics.f1_score, "f1_score"),
+            (sklearn.metrics.log_loss, "log_loss")
+
+        ]
+
+    def generate_data(self):
+        X, y = get_classification(random_state=self.random_state)
+        X = pd.DataFrame(X)
+        y = pd.DataFrame(y)
+
+        # TODO: Delete this to not duplicate data.  Just deal with train/val splits.
+        self.X = X
+        self.y = y
+
+        self.split_val_train()
+
+class BaseRegressionAnalyzer(BaseAnalyzer):
+    pass
+
+class ClassificationAnalyzer(BaseClassificationAnalyzer):
+    """
+    FITTING
+    PREDICTING
+    ANALYZING should be clearly differentiated and encapsulated things.
+
+    """
+
+    def __init__(self,
+                 random_state = 42,
+                 max_depth = 5,
+                 n_estimators = 100,
+                 use_subsample = 0.8,
+                 n_jobs = -1,
+                 simulate_data = False):
+
+        self.random_state = random_state
+
+        self.n_estimators = n_estimators
+        self.use_subsample = use_subsample
+
+        self.max_depth = max_depth
+        self.is_fit = False
+        self.n_jobs = n_jobs
+
+        self._initialize_models()
+        self._initialize_metrics()
+        self._initialize_preds()
+
+        if simulate_data:
+            self.generate_data()
+
+
+    def _update_validation_ready_models(self):
+        """
+        Models with early stopping should include validation sets.
+
+        :return:
+        """
+        pass
+
+    def split_val_train(self,
+                        train_fraction = 4/5,
+                        method = "stochastic",
+                        verbose = True):
+        """
+        Splits data into train and validation splits.
+        Useful for quick processing.
+
+        :param X:
+        :param y:
+        :param: method ("stochastic", "time_series")
+        :return:
+        """
+
+        X = self.X
+        y = self.y
+
+        length_of_X = len(X)
+
+        if method == "stochastic":
+            self.X_train, self.X_valid, self.y_train, self.y_valid = sklearn.model_selection.train_test_split(
+                X, y, train_size = train_fraction,
+                stratify = y,
+                random_state=self.random_state,
+                shuffle = True
+            )
+
+        if method == "time_series":
+            # TODO: Add stochastic and time-series variants.
+
+            split_at_id = int(length_of_X * train_fraction)
+
+            self.X_train = X.iloc[0:split_at_id, :]
+            self.y_train = y.iloc[0:split_at_id]
+
+            self.X_valid = X.iloc[split_at_id:, :]
+            self.y_valid = y.iloc[split_at_id:]
+
+        self.y_true = self.y_valid
+        self._update_validation_ready_models()
+
+    def cross_validate(self):
+        pass
+
+
+
+
+    def load_preds(self):
+        pass
+
+
+    def within_threshold(self, threshold: float):
+        """
+        Finds all
+        :param threshold: float - Find all outputs that are within a threshold.
+
+        :return:
+        """
+
+        # Validate that the model is fit_models already.
+
+
 
 
 
@@ -709,12 +710,14 @@ class ClassificationAnalyzer():
 
         correct_mask = trues_df == self.preds_df
 
+
         self.correct_mask = correct_mask
 
         n_correct = correct_mask.sum(axis = 1)
 
         mask_with_margins = correct_mask.insert(0, "n_clf_correct", n_correct)
 
+        # TODO: This doesn't do what I want.  It is still set to "correct_mask"
         self.correct_mask_with_margins_ = mask_with_margins
 
         n_correct = n_correct.sort_values()
@@ -730,7 +733,7 @@ class ClassificationAnalyzer():
         print("Index is the number of correct predictions, value is how many samples had that number of correct")
         print(self.n_freq_correct)
 
-        print("\nFull Mask: retrievable with the .correct_mask_with_margins_ attribute")
+        print("\nFull Mask: retrievable with the .correct_mask attribute")
         print(mask_with_margins)
 
         print(self.correct_mask)
@@ -848,6 +851,25 @@ class ClassificationAnalyzer():
         :return:
         """
         pass
+
+    def ensemble_from_pred_columns(self):
+        pass
+
+    def combinatorial_ensemble(self):
+
+        self.ensemble_comb_preds = pd.DataFrame(index = self.preds_df.index)
+
+        cols = self.preds_df.columns
+        length_cols = len(cols)
+
+        for num_columns in range(2, length_cols):
+            column_combinations = combinations(cols, num_columns)
+
+            for the_cols in column_combinations:
+                # Put ensembler loop in here.
+
+                pass
+
 
     def bootstrap(self):
         pass
