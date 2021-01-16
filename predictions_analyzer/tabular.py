@@ -309,7 +309,8 @@ class ClassificationAnalyzer():
             self.X_train, self.X_valid, self.y_train, self.y_valid = sklearn.model_selection.train_test_split(
                 X, y, train_size = train_fraction,
                 stratify = y,
-                random_state=self.random_state
+                random_state=self.random_state,
+                shuffle = True
             )
 
         if method == "time_series":
