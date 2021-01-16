@@ -78,13 +78,17 @@ class ClassificationAnalyzer():
                  max_depth = 5,
                  n_estimators = 100,
                  use_subsample = 0.8,
+                 n_jobs = -1,
                  simulate_data = False):
+
+        self.random_state = random_state
 
         self.n_estimators = n_estimators
         self.use_subsample = use_subsample
-        self.random_state = random_state
+
         self.max_depth = max_depth
         self.is_fit = False
+        self.n_jobs = n_jobs
 
         self._initialize_models()
         self._initialize_metrics()
@@ -98,17 +102,35 @@ class ClassificationAnalyzer():
         self.dummy = sklearn.dummy.DummyClassifier(strategy = "prior")
 
         # Set random state / seeds for these
-        self.logistic_reg = sklearn.linear_model.LogisticRegression()
-        self.ridge = sklearn.linear_model.RidgeClassifier()
+
+        self.logistic_reg = sklearn.linear_model.LogisticRegression(penalty = "none",
+                                                                    n_jobs = self.n_jobs)
+
+        self.logistic_l1 = sklearn.linear_model.LogisticRegression(penalty = "l1",
+                                                                   solver = "saga",
+                                                                   n_jobs=self.n_jobs)
+
+        self.logistic_l2 = sklearn.linear_model.LogisticRegression(penalty = "l2",
+                                                                   solver = "saga",
+                                                                   n_jobs=self.n_jobs)
+
+        self.logistic_elastic = sklearn.linear_model.LogisticRegression(penalty = "elasticnet",
+                                                                        solver = "saga",
+                                                                        n_jobs=self.n_jobs)
+
+        self.ridge = sklearn.linear_model.RidgeClassifier(normalize = True)
+
         self.svc = sklearn.svm.SVC()
 
         self.nb = sklearn.naive_bayes.GaussianNB()
+        self.nb_complement = sklearn.naive_bayes.ComplementNB()
+
         self.knn = sklearn.neighbors.KNeighborsClassifier()
 
         self.dec_tree = sklearn.tree.DecisionTreeClassifier(max_depth=self.max_depth)
         self.extr_tree = sklearn.ensemble.ExtraTreesClassifier(max_depth=self.max_depth)
         self.random_forest = sklearn.ensemble.RandomForestClassifier(max_depth=self.max_depth)
-        self.bagging_clf = sklearn.ensemble.BaggingClassifier(max_features=0.4,
+        self.bagging_clf = sklearn.ensemble.BaggingClassifier(max_features=0.8,
                                                               max_samples=self.use_subsample)
 
         self.xgb_clf = xgb.XGBClassifier(
@@ -139,7 +161,10 @@ class ClassificationAnalyzer():
 
         # A list of named tuples of all models to loop through.
         self.models = [
+            (self.dummy, "dummy_prior_clf"),
             (self.logistic_reg, "logistic_reg"),
+            (self.logistic_l1, "logistic_l1"),
+            (self.logistic_l2, "logistic_l2"),
             (self.ridge, "ridge"),
             (self.nb, "nb"),
             (self.dec_tree, "dec_tree"),
