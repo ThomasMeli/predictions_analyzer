@@ -12,6 +12,16 @@ def get_ExClfObj():
 
     return ex
 
+def test_validation_splits_arent_the_same():
+    """
+    Check that the stochastic method
+    and time series method produce
+    different results.
+
+    :return:
+    """
+    pass
+
 def get_titanic_obj():
     titanic = ClassificationAnalyzer(simulate_data=False)
     X = pd.read_csv(classification_data_path + "titanic.csv")

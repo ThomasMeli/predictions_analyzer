@@ -288,7 +288,7 @@ class ClassificationAnalyzer():
 
     def split_val_train(self,
                         train_fraction = 4/5,
-                        method = "time_series",
+                        method = "stochastic",
                         verbose = True):
         """
         Splits data into train and validation splits.
@@ -296,6 +296,7 @@ class ClassificationAnalyzer():
 
         :param X:
         :param y:
+        :param: method ("stochastic", "time_series")
         :return:
         """
 
@@ -303,6 +304,13 @@ class ClassificationAnalyzer():
         y = self.y
 
         length_of_X = len(X)
+
+        if method == "stochastic":
+            self.X_train, self.X_valid, self.y_train, self.y_valid = sklearn.model_selection.train_test_split(
+                X, y, train_size = train_fraction,
+                stratify = y,
+                random_state=self.random_state
+            )
 
         if method == "time_series":
             # TODO: Add stochastic and time-series variants.
@@ -315,15 +323,8 @@ class ClassificationAnalyzer():
             self.X_valid = X.iloc[split_at_id:, :]
             self.y_valid = y.iloc[split_at_id:]
 
-        elif method == "stochastic":
-            self.X_train, self.X_valid, self.y_train, self.y_valid = sklearn.model_selection.train_test_split(
-                X, y, train_size = train_fraction,
-                stratify = y,
-                random_state=self.random_state
-            )
 
-        else:
-            pass
+
 
         self.y_true = self.y_valid
         self._update_validation_ready_models()
