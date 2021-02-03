@@ -270,6 +270,37 @@ def test_ensembled_preds_metrics_exist():
     # TO DO:
     # assert accuracy_score is in one row.
 
+def test_show_feature_analysis_from_model():
+    ex = get_ExClfObj()
+    titanic = get_titanic_obj()
+
+    test_objects = [("simulated", ex), ("titanic", titanic)]
+
+    for name, obj in test_objects:
+        print("\nTesting: ", name, " dataset")
+
+        obj.show_feature_analysis_from_model()
+
+
+def test_wandb_fit_predict():
+    ex = get_ExClfObj()
+    titanic = get_titanic_obj()
+
+    test_objects = [("simulated", ex), ("titanic", titanic)]
+
+    wandb.login()
+
+    for name, obj in test_objects:
+        print("\nTesting: ", name, " dataset")
+
+        obj.show_models()
+
+        obj.initialize_wandb(project_name="predictions_analyzer_tests",
+                             group_name=name+"_test_wandb_fit_predict",
+                             experiment_name="testing")
+
+        obj.fit_predict_log_wandb()
+
 def test_find_hardest_samples():
     ex = get_ExClfObj()
     titanic = get_titanic_obj()

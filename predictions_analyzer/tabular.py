@@ -13,6 +13,8 @@ use with real numpy or pandas data.
 from tqdm import tqdm
 from time import time
 
+
+
 from lightgbm import LGBMClassifier
 import xgboost as xgb
 
@@ -25,15 +27,27 @@ import sklearn.metrics
 from sklearn.metrics import plot_confusion_matrix, classification_report
 import sklearn.model_selection
 
+import sklearn.feature_selection
+
 import sklearn.naive_bayes
 import sklearn.neighbors
+
+from sklearn.utils.multiclass import unique_labels
 
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
+
 from predictions_analyzer.analyze import Analyzer
 
 from itertools import combinations
+
+# Put this in an if-statement?
+# By Extension?
+# How to extend this without 'requiring it' if the user
+# Doesn't use it?
+import wandb
+
 
 def get_classification(random_state = 42):
     """
@@ -65,6 +79,9 @@ class BaseAnalyzer:
     analyzers.
 
     """
+
+
+
 
     def show_models(self):
         for model in self.models:
@@ -140,6 +157,19 @@ class BaseAnalyzer:
             return True
 
     def load_unsplit_data(self, X, y):
+
+        # In case it is a numpy array.
+        try:
+            self.feature_names = X.columns
+        except:
+            pass
+
+        # In case it is a numpy array.
+        try:
+            self.target_names = y.columns
+        except:
+            pass
+
         self.X = X
         self.y = y
 
@@ -150,6 +180,26 @@ class BaseAnalyzer:
         self.y_train = y_train
         self.X_valid = X_valid
         self.y_valid = y_valid
+
+    def fit_predict_cv(self, cv, verbose = True):
+        """
+        This method uses a specified cross validation method to fit
+        and predict.
+
+        :param verbose:
+        :param cv:
+        :return:
+        """
+
+    def fit_linear(self):
+        pass
+
+    def fit_trees(self):
+        pass
+
+    def fit_nonparametric(self):
+        pass
+
 
     def fit_models(self, verbose = True):
         """
@@ -179,7 +229,9 @@ class BaseAnalyzer:
 
         self.is_fit = self._set_is_fit(True)
 
-    def predict(self, verbose = True):
+    def predict(self,
+                verbose = True,
+                ):
         """
         Predict on the self.X_valid and self.y_valid and save time metrics.
         Must run or load a validation split and .fit_models first.
@@ -215,6 +267,170 @@ class BaseAnalyzer:
         self.preds_df = self.preds_df.drop("y_true", axis = 1)
 
         return self.preds_df
+
+    def initialize_wandb(self,
+                   project_name:str = None,
+                   group_name:str = None,
+                   experiment_name:str = None
+                   ):
+        """
+        This initializes weights and biases project, group, and
+        experiment names to the Analyzer object.
+
+        :param project_name:
+        :param group_name:
+        :param experiment_name:
+        :return:
+        """
+
+        self.project_name = project_name
+        self.experiment_name = experiment_name
+        self.group_name = group_name
+
+        wandb.init(project = project_name,
+                  group = group_name,
+                  name = experiment_name)
+
+
+    def wandb_sklearn_log(self):
+        pass
+
+
+    def fit_predict_log_wandb(self,
+                              verbose = True):
+        """
+        Fits, Predicts, and Logs all classifiers with
+        Weights and Biases
+
+
+        :return:
+        """
+
+        # Check if self.project_name is not None. etc.
+        print(self.project_name, self.group_name, self.experiment_name)
+
+        ########### Check this.
+        # Here or in the __init__?
+        self.preds_df = pd.DataFrame(self.y_true, columns=["y_true"])
+
+        # Drop y_true.  Just keep it in self.y_true
+        self.preds_df = self.preds_df.drop("y_true", axis=1)
+        ############
+
+        self.model_fit_speeds = pd.DataFrame()
+        self.model_pred_speeds = pd.DataFrame()
+
+        y_labels = unique_labels(self.y_valid)
+
+        """
+        
+        wandb.sklearn.plot_class_proportions(self.y_train,
+                                             self.y_valid,
+                                             labels=y_labels)
+        """
+
+        for model, model_name in self.models:
+
+            print(model_name)
+
+            wandb.init(project=self.project_name,
+                       group=self.group_name,
+                       name=model_name,
+                       reinit=True)
+
+            time_start = time()
+
+            model.fit(self.X_train, self.y_train)
+
+            time_finish = time()
+            time_to_fit = round(time_finish - time_start, 4)
+
+            wandb.log({"fit_speed":time_to_fit})
+
+            if verbose:
+                print("fit:", model_name, time_to_fit, "seconds")
+
+            self.model_fit_speeds[model_name] = time_to_fit
+
+            ######
+
+            # TODO: Check if model split_val_train has been called
+
+            time_start = time()
+
+            # TODO: Add Exception handling to predict doesn't stop.
+
+            self.preds_df[model_name] = model.predict(self.X_valid)
+
+            time_finish = time()
+            time_to_fit = round(time_finish - time_start, 4)
+
+            if verbose:
+                print("predicted with:", model_name, "took ", time_to_fit, "seconds")
+
+            wandb.log({"predict_speed": time_to_fit})
+
+            self.model_pred_speeds[model_name] = time_to_fit
+
+            # TODO: Add - model.predict_proba(self.X_valid)
+
+            wandb.sklearn.plot_learning_curve(model, self.X_train, self.y_train)
+
+            can_plot_roc = ["logistic_l1", "logistic_l2"]
+            cannot_plot_roc = ["ridge"]
+
+            if model_name in cannot_plot_roc:
+                pass
+            else:
+                predicted_probas = model.predict_proba(self.X_valid)
+
+                wandb.sklearn.plot_roc(self.y_valid,
+                                       predicted_probas,
+                                       labels = y_labels)
+
+                wandb.sklearn.plot_precision_recall(self.y_valid,
+                                                   predicted_probas,
+                                                   labels = y_labels)
+
+            wandb.sklearn.plot_confusion_matrix(self.y_valid,
+                                                self.preds_df[model_name],
+                                                labels = y_labels)
+
+
+
+
+
+            cannot_feature_importance = ["dummy_prior_clf", "nb"]
+            if model_name in cannot_feature_importance:
+                pass
+            else:
+                wandb.sklearn.plot_feature_importances(model,
+                                                       list(self.X_valid.columns))
+
+
+
+            """
+            wandb.sklearn.plot_classifier(model,
+                                          self.X_train,
+                                          self.X_valid,
+                                          self.y_train,
+                                          self.y_valid,
+                                          y_pred = self.preds_df[model_name],
+                                          y_probas = model.predict_proba(self.X_valid),
+                                          labels = unique_labels(self.y_valid),
+                                          model_name=model_name,
+                                          feature_names=self.X_train.columns)
+            """
+
+
+    def tune_with_optuna(self, trials = 20):
+        """
+        This method will tune
+        :param trials:
+        :return:
+        """
+        pass
+
 
     def apply_ytrue(self,
                        func,
@@ -291,6 +507,17 @@ class BaseAnalyzer:
 
             assert self.metrics_df.empty != True  # Has metric been added to self.metrics_df?
 
+    def extract_best_feature_importances(self):
+        pass
+
+    def extract_n_best_features(self):
+        pass
+
+    def show_permutation_importances(self):
+        pass
+
+
+
 
 class BaseClassificationAnalyzer(BaseAnalyzer):
     """
@@ -304,52 +531,63 @@ class BaseClassificationAnalyzer(BaseAnalyzer):
         # Set random state / seeds for these
 
         self.logistic_reg = sklearn.linear_model.LogisticRegression(penalty="none",
-                                                                    n_jobs=self.n_jobs)
+                                                                    n_jobs=self.n_jobs,
+                                                                    random_state = self.random_state)
 
         self.logistic_l1 = sklearn.linear_model.LogisticRegression(penalty="l1",
                                                                    solver="saga",
-                                                                   n_jobs=self.n_jobs)
+                                                                   n_jobs=self.n_jobs,
+                                                                    random_state = self.random_state)
 
         self.logistic_l2 = sklearn.linear_model.LogisticRegression(penalty="l2",
                                                                    solver="saga",
-                                                                   n_jobs=self.n_jobs)
+                                                                   n_jobs=self.n_jobs,
+                                                                    random_state = self.random_state)
 
         self.logistic_elastic = sklearn.linear_model.LogisticRegression(penalty="elasticnet",
                                                                         solver="saga",
-                                                                        n_jobs=self.n_jobs)
+                                                                        n_jobs=self.n_jobs,
+                                                                       random_state = self.random_state)
 
-        self.ridge = sklearn.linear_model.RidgeClassifier(normalize=True)
+        self.ridge = sklearn.linear_model.RidgeClassifier(normalize=True,
+                                                                    random_state = self.random_state)
 
-        self.svc = sklearn.svm.SVC()
+        self.svc = sklearn.svm.SVC(random_state = self.random_state)
 
         self.nb = sklearn.naive_bayes.GaussianNB()
         self.nb_complement = sklearn.naive_bayes.ComplementNB()
 
         self.knn = sklearn.neighbors.KNeighborsClassifier()
 
-        self.dec_tree = sklearn.tree.DecisionTreeClassifier(max_depth=self.max_depth)
+        self.dec_tree = sklearn.tree.DecisionTreeClassifier(max_depth=self.max_depth,
+                                                            random_state = self.random_state)
 
         self.extr_tree = sklearn.ensemble.ExtraTreesClassifier(max_depth=self.max_depth,
-                                                              n_jobs = self.n_jobs)
+                                                              n_jobs = self.n_jobs,
+                                                               random_state = self.random_state)
 
         self.random_forest = sklearn.ensemble.RandomForestClassifier(max_depth=self.max_depth,
-                                                              n_jobs = self.n_jobs)
+                                                                    n_jobs = self.n_jobs,
+                                                                     random_state = self.random_state)
 
         self.bagging_clf = sklearn.ensemble.BaggingClassifier(max_features=0.8,
                                                               max_samples=self.use_subsample,
-                                                              n_jobs = self.n_jobs)
+                                                              n_jobs = self.n_jobs,
+                                                              random_state = self.random_state)
 
         self.xgb_clf = xgb.XGBClassifier(
             n_estimators=self.n_estimators,
             max_depth=self.max_depth,
             subsample=self.use_subsample,
-            tree_method="approx"
+            tree_method="approx",
+            random_state=self.random_state
         )
 
         self.lgb_clf = LGBMClassifier(
             n_estimators=self.n_estimators,
             max_depth=self.max_depth,
-            num_leaves=64
+            num_leaves=64,
+            random_state=self.random_state
         )
 
         # TODO: Organize into model types so each model can .fit on data made for it.
@@ -408,6 +646,41 @@ class BaseClassificationAnalyzer(BaseAnalyzer):
         self.y = y
 
         self.split_val_train()
+
+    def stack_classifiers(self):
+        # TODO: Damn!  The tuple is the in the reverse order!!!
+
+        self.stacking_clf = sklearn.ensemble.StackingClassifier(self.models)
+
+
+    def model_feature_sklearn_loop(self):
+        pass
+
+    def show_feature_analysis_from_model(self):
+
+        colnames = self.X.columns
+
+        xgb_selector = sklearn.feature_selection.SelectFromModel(self.xgb_clf,
+                                                                 prefit=True)
+
+        xgb_selected = xgb_selector.transform(self.X)
+        print(xgb_selected.shape)
+
+        # xgb_selected_df = None
+
+        xgb_support = xgb_selector.get_support()
+        print(xgb_support)
+
+        xgb_threshold = xgb_selector.threshold_
+        print(xgb_threshold)
+
+
+
+    def show_feature_analysis(self):
+
+
+        pass
+
 
 class BaseRegressionAnalyzer(BaseAnalyzer):
     pass

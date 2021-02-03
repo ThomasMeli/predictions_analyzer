@@ -47,7 +47,6 @@ class BaseEnsembleAnalyzer:
                 self.corr_df.iloc[i,j] = mean_corr
 
 
-
 class RegressionEnsembleAnalyzer(BaseEnsembleAnalyzer):
     def __init__(self):
         self.submissions = []
