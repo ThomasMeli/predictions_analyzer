@@ -5,12 +5,16 @@ __pycache__/
 
 # Local Testing
 tests/test_submissions/
+wandb/
+tests/wandb
 
 # C extensions
 *.so
 
 # Distribution / packaging
 .Python
+
+
 build/
 develop-eggs/
 dist/
