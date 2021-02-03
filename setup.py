@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="predictions_analyzer",
-    version="0.0.52",
+    version="0.0.53",
     author="Thomas Meli",
     author_email="tpmeli.data@gmail.com",
     description="A powerful tool for analyzing and ensembling predictions",

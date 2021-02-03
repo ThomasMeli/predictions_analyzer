@@ -396,6 +396,32 @@ class BaseAnalyzer:
                                                 self.preds_df[model_name],
                                                 labels = y_labels)
 
+            this_acc = sklearn.metrics.accuracy_score(self.y_valid,
+                                                      self.preds_df[model_name])
+            wandb.log({"accuracy_score":this_acc})
+
+            this_bal_acc = sklearn.metrics.balanced_accuracy_score(self.y_valid,
+                                                                   self.preds_df[model_name])
+
+            wandb.log({"balanced_accuracy": this_bal_acc})
+
+            try:
+                this_recall = sklearn.metrics.recall_score(self.y_valid,
+                                                           self.preds_df[model_name])
+                wandb.log({"recall_score": this_recall})
+            except:
+                print("skipping recall for", model_name)
+
+            try:
+                this_precision = sklearn.metrics.precision_score(self.y_valid,
+                                                           self.preds_df[model_name])
+                wandb.log({"precision_score": this_precision})
+            except:
+                print("skipping precision for", model_name)
+
+
+
+
 
 
 
