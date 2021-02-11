@@ -12,6 +12,42 @@ def get_ExClfObj():
 
     return ex
 
+def get_JSObj():
+    js = ClassificationAnalyzer(simulate_data = False,
+                                multi_output=True)
+    ycols = ['resp', 'resp_1', 'resp_2', 'resp_3', 'resp_4']
+
+    X = pd.read_csv(classification_data_path + "js_sample_multi.csv")
+    y = X[ycols]
+
+    X = X.drop(ycols, axis = 1).fillna(X.mean())
+
+    js.load_unsplit_data(X, y)
+    print(js.X.shape)
+    print(js.y.shape)
+
+    js.split_val_train(method = "multi_stochastic")
+    print("After Splits")
+    print(js.X_train.shape)
+    print(js.y_train.shape)
+    print(js.X_valid.shape)
+    print(js.y_valid.shape)
+
+    js.initialize_wandb(project_name="predictions_analyzer_tests",
+                         group_name= "js_test_wandb_fit_predict_multi")
+
+    return js
+
+def test_wandb_fit_predict_multi():
+    js = get_JSObj()
+
+    js.fit_predict_log_wandb_multi()
+
+
+def get_all_test_objs():
+    pass
+
+
 def test_validation_splits_arent_the_same():
     """
     Check that the stochastic method
@@ -24,7 +60,9 @@ def test_validation_splits_arent_the_same():
 
 def get_titanic_obj():
     titanic = ClassificationAnalyzer(simulate_data=False)
+
     X = pd.read_csv(classification_data_path + "titanic.csv")
+
     y = X.pop("Survived")
 
     titanic.load_unsplit_data(X, y)
@@ -280,6 +318,7 @@ def test_show_feature_analysis_from_model():
         print("\nTesting: ", name, " dataset")
 
         obj.show_feature_analysis_from_model()
+
 
 
 def test_wandb_fit_predict():

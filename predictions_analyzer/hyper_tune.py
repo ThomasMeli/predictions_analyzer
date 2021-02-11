@@ -19,10 +19,43 @@ class BaseTuner:
         """
 
 
+class FeatureTuner:
+    """
+    Turn feature generation into a grid search
+    or bayesian optimization problem.
+
+    """
+
+    def __init__(self):
+        pass
+
 
 class ClassificationTuner:
     def __init__(self):
         pass
+
+    def tune_add(self, remove_original = False):
+        """
+        Tune a model and then add it to
+        a Classification Analyzer.
+
+        remove_original
+
+        :return:
+        """
+
+    def tune_all(self, remove_original = False):
+        """
+        Tune all models in a Classification
+        Analyzer.
+
+        Loops through tune_add.
+
+        remove_original:
+
+        :return:
+        """
+
 
 class RegressionTuner:
     def __init__(self):

@@ -27,6 +27,8 @@ import sklearn.metrics
 from sklearn.metrics import plot_confusion_matrix, classification_report
 import sklearn.model_selection
 
+import sklearn.multioutput
+
 import sklearn.feature_selection
 
 import sklearn.naive_bayes
@@ -34,6 +36,7 @@ import sklearn.neighbors
 
 from sklearn.utils.multiclass import unique_labels
 
+import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -79,8 +82,6 @@ class BaseAnalyzer:
     analyzers.
 
     """
-
-
 
 
     def show_models(self):
@@ -173,6 +174,9 @@ class BaseAnalyzer:
         self.X = X
         self.y = y
 
+        #self.is_multioutput = self.y.shape[1] > 1
+        #print("is multioutput: ", self.is_multioutput)
+
     def load_split_data(self, X_train, y_train,
                         X_valid, y_valid):
 
@@ -200,7 +204,6 @@ class BaseAnalyzer:
     def fit_nonparametric(self):
         pass
 
-
     def fit_models(self, verbose = True):
         """
         Fit all models on the self.X_train and self.y_train data.
@@ -209,6 +212,8 @@ class BaseAnalyzer:
 
         :return:
         """
+
+        #TODO Calls _fit?
 
         self.model_fit_speeds = pd.DataFrame()
 
@@ -239,6 +244,8 @@ class BaseAnalyzer:
         :param verbose:
         :return:
         """
+
+        # TODO: Calls _predict
 
         # Here or in the __init__?
         self.preds_df = pd.DataFrame(self.y_true, columns = ["y_true"])
@@ -295,6 +302,301 @@ class BaseAnalyzer:
     def wandb_sklearn_log(self):
         pass
 
+    def log_stats_with_wandb(self):
+        # TODO: Put this in BaseAnalyzer
+
+        pass
+
+    def information_analysis_with_wandb(self):
+        # TODO: Put this in BaseAnalyzer
+
+        pass
+
+    def feature_analysis_with_wandb(self):
+        # TODO: Put this in BaseAnalyzer
+        # All feature selector information
+        # Statistical tests for features... outputs for analysis.
+        # Correlations and their meaning.
+        # Several models with feature importance
+        # Intersection of features
+        # Union of best features above threshold.
+
+        pass
+
+    def _store_column_names(self):
+        pass
+
+    def _fit_initialize_logs(self):
+        pass
+
+    def _fit_initialize_wandb(self,
+                              model_name,
+                              reinit = True):
+
+        wandb.init(project=self.project_name,
+                   group=self.group_name,
+                   name=model_name,
+                   reinit=reinit)
+
+    def _fit_initialize_preds(self):
+        """
+        Private function to internally initialize preds object and other
+        prediction state objects.
+
+        predict_proba objects, etc.
+
+        :return:
+        """
+        # Check if self.project_name is not None. etc.
+        print(self.project_name, self.group_name, self.experiment_name)
+
+        ########### Check this.
+        # Here or in the __init__?
+        self.preds_df = pd.DataFrame(self.y_true, columns=["y_true"])
+
+        # Drop y_true.  Just keep it in self.y_true
+        self.preds_df = self.preds_df.drop("y_true", axis=1)
+        ############
+
+        self.model_fit_speeds = pd.DataFrame()
+        self.model_pred_speeds = pd.DataFrame()
+
+        y_labels = unique_labels(self.y_valid)
+
+
+    def _fit_model(self,
+                   model,
+                   model_name,
+                   use_wandb = False,
+                   verbose = True,
+                   tags = ["untagged"]):
+
+        # Have VERBOSE be an object setting.
+
+        print(model_name)
+
+        self._fit_initialize_wandb(model_name)
+
+        time_start = time()
+
+        model.fit(self.X_train, self.y_train)
+
+        time_finish = time()
+        time_to_fit = round(time_finish - time_start, 4)
+
+        # TODO: Log with Tags
+        if use_wandb:
+            wandb.log({"fit_time":time_to_fit})
+
+        if verbose:
+            print("fit:", model_name, time_to_fit, "seconds")
+
+        self.model_fit_speeds[model_name] = time_to_fit
+
+    def _predict_model(self,
+                       use_wandb = False,
+                       multioutput = False,
+                       aggregation = None):
+        """
+
+        :param use_wandb:
+        :param multioutput: True, False, "Auto" <-- Change to static typing if adding auto.....
+        :param aggregation: If multi-output, shouldl you aggregate the predictions?
+        :return:
+        """
+
+        pass
+
+    def _wandb_log_probas(self):
+        pass
+
+    def _wandb_log_classification_metrics(self):
+        pass
+
+    def _wandb_log_feature_importances(self):
+        pass
+
+    def _fit_predict_log_wandb_loop(self,
+                                   model,
+                                   model_name,
+                                   predict_probas = True,
+                                   do_class_metrics = True,
+                                   do_feature_importances = True):
+
+        # REFACTOR LIKE THIS:
+        #self._fit_model(model, model_name, use_wandb=True)
+        #self._predict_model()
+        #self._wandb_log_probas()
+        #self._wandb_log_classification_metrics()
+        #self._wandb_log_feature_importances()
+
+        pass
+
+    def fit_predict_log_wandb_multi(self,
+                                    verbose = True):
+        """
+        TODO: Use DRY design to update this and the not-multi
+        version of this function.
+
+        :return:
+        """
+
+        # Refactor like this:
+        # for model, model_name in self.models:
+        #    print(model_name)
+        #    self._fit_predict_log_wandb_loop(model, model_name)
+
+
+        #########OLD But Working##########
+        # Check if self.project_name is not None. etc.
+        print(self.project_name, self.group_name, self.experiment_name)
+
+        ########### Check this.
+        # Here or in the __init__?
+        self.preds_df = pd.DataFrame(self.y_true, columns=["y_true"])
+
+        # Drop y_true.  Just keep it in self.y_true
+        self.preds_df = self.preds_df.drop("y_true", axis=1)
+        ############
+
+        self.model_fit_speeds = pd.DataFrame()
+        self.model_pred_speeds = pd.DataFrame()
+
+        # TODO: FIX BUG WHERE LABELLING MULTICLASS COMES OUT WRONG
+        # self.y_valid[:100]
+        y_labels = unique_labels(self.y_valid)
+
+        # y_labels = [0,1]  # TODO: Temp fix FOR JS
+
+        print("y_labels: ", y_labels)
+
+        """
+
+        wandb.sklearn.plot_class_proportions(self.y_train,
+                                             self.y_valid,
+                                             labels=y_labels)
+        """
+
+        for model, model_name in self.models:
+
+            print(model_name)
+
+            wandb.init(project=self.project_name,
+                       group=self.group_name,
+                       name=model_name,
+                       reinit=True)
+
+            time_start = time()
+
+            model.fit(self.X_train, self.y_train)
+
+            time_finish = time()
+            time_to_fit = round(time_finish - time_start, 4)
+
+            wandb.log({"fit_time": time_to_fit})
+
+            if verbose:
+                print("fit:", model_name, time_to_fit, "seconds")
+
+            self.model_fit_speeds[model_name] = time_to_fit
+
+            ######
+
+            # TODO: Check if model split_val_train has been called
+
+            time_start = time()
+
+            # TODO: Add Exception handling to predict doesn't stop.
+
+            # TODO: Make Multi Compatible
+            this_preds = model.predict(self.X_valid)
+
+            time_finish = time()
+            time_to_fit = round(time_finish - time_start, 4)
+
+            # TODO: Add TRAINING Accuracy as well as Validation accuracy.
+            # TODO: Add difference in training and validation accuracy.
+            # TODO: Do this for all metrics?
+
+            if verbose:
+                print("predicted with:", model_name, "took ", time_to_fit, "seconds")
+
+            wandb.log({"predict_time": time_to_fit})
+
+            # self.model_pred_speeds[model_name] = time_to_fit
+
+            # TODO: Add - model.predict_proba(self.X_valid)
+
+            wandb.sklearn.plot_learning_curve(model, self.X_train, self.y_train)
+
+            # TODO: Name this correctly.  It isn't an ROC thing.
+            can_plot_roc = ["logistic_l1", "logistic_l2"]
+            cannot_plot_roc = ["ridge", "bagged_svc_clf"]
+
+            if model_name in cannot_plot_roc:
+                pass
+            else:
+                predicted_probas = np.array(model.predict_proba(self.X_valid))
+
+                print("probas shape:", predicted_probas.shape)
+                print("valid shape", self.y_valid.shape)
+
+                #this_roc_score = sklearn.metrics.roc_auc_score(
+                #    y_true = self.y_valid,
+                #    y_score = predicted_probas
+                #)
+
+                #wandb.log({"roc_auc_score": this_roc_score})
+
+                #this_roc_curve = sklearn.metrics.plot_roc_curve(model,
+                #                                    self.X_valid,
+                #                                    self.y_valid,
+                #                                    response_method = "predict_proba")
+
+                # wandb.log({model_name+"roc":this_roc_curve})
+
+
+                #wandb.sklearn.plot_precision_recall(self.y_valid,
+                #                                    predicted_probas,
+                #                                    labels=y_labels)
+
+            #wandb.sklearn.plot_confusion_matrix(self.y_valid,
+            #                                    self.preds_df[model_name],
+            #                                    labels=y_labels)
+
+            #this_acc = sklearn.metrics.accuracy_score(self.y_valid,
+            #                                          self.preds_df[model_name])
+
+            this_model_score = model.score(self.X_valid, self.y_valid)
+            wandb.log({"accuracy_score": this_model_score})
+
+            #this_bal_acc = sklearn.metrics.balanced_accuracy_score(self.y_valid,
+            #                                                       self.preds_df[model_name])
+
+            #wandb.log({"balanced_accuracy": this_bal_acc})
+            """
+            try:
+                this_recall = sklearn.metrics.recall_score(self.y_valid,
+                                                           self.preds_df[model_name])
+                wandb.log({"recall_score": this_recall})
+            except:
+                print("skipping recall for", model_name)
+
+            try:
+                this_precision = sklearn.metrics.precision_score(self.y_valid,
+                                                                 self.preds_df[model_name])
+                wandb.log({"precision_score": this_precision})
+            except:
+                print("skipping precision for", model_name)
+
+            cannot_feature_importance = ["dummy_prior_clf", "nb"]
+            if model_name in cannot_feature_importance:
+                pass
+            else:
+                wandb.sklearn.plot_feature_importances(model,
+                                                       list(self.X_valid.columns))
+            """
+
 
     def fit_predict_log_wandb(self,
                               verbose = True):
@@ -345,7 +647,7 @@ class BaseAnalyzer:
             time_finish = time()
             time_to_fit = round(time_finish - time_start, 4)
 
-            wandb.log({"fit_speed":time_to_fit})
+            wandb.log({"fit_time":time_to_fit})
 
             if verbose:
                 print("fit:", model_name, time_to_fit, "seconds")
@@ -365,10 +667,14 @@ class BaseAnalyzer:
             time_finish = time()
             time_to_fit = round(time_finish - time_start, 4)
 
+            # TODO: Add TRAINING Accuracy as well as Validation accuracy.
+            # TODO: Add difference in training and validation accuracy.
+            # TODO: Do this for all metrics?
+
             if verbose:
                 print("predicted with:", model_name, "took ", time_to_fit, "seconds")
 
-            wandb.log({"predict_speed": time_to_fit})
+            wandb.log({"predict_time": time_to_fit})
 
             self.model_pred_speeds[model_name] = time_to_fit
 
@@ -376,8 +682,9 @@ class BaseAnalyzer:
 
             wandb.sklearn.plot_learning_curve(model, self.X_train, self.y_train)
 
+            #TODO: Name this correctly.  It isn't an ROC thing.
             can_plot_roc = ["logistic_l1", "logistic_l2"]
-            cannot_plot_roc = ["ridge"]
+            cannot_plot_roc = ["ridge", "bagged_svc_clf"]
 
             if model_name in cannot_plot_roc:
                 pass
@@ -418,12 +725,6 @@ class BaseAnalyzer:
                 wandb.log({"precision_score": this_precision})
             except:
                 print("skipping precision for", model_name)
-
-
-
-
-
-
 
 
             cannot_feature_importance = ["dummy_prior_clf", "nb"]
@@ -551,55 +852,70 @@ class BaseClassificationAnalyzer(BaseAnalyzer):
 
     """
 
-    def _initialize_models(self):
-        self.dummy = sklearn.dummy.DummyClassifier(strategy="prior")
+    def _initialize_dummy_models(self):
+        pass
 
-        # Set random state / seeds for these
 
+    def _initialize_linear_models(self):
         self.logistic_reg = sklearn.linear_model.LogisticRegression(penalty="none",
                                                                     n_jobs=self.n_jobs,
-                                                                    random_state = self.random_state)
+                                                                    max_iter=1000,
+                                                                    random_state=self.random_state)
 
         self.logistic_l1 = sklearn.linear_model.LogisticRegression(penalty="l1",
                                                                    solver="saga",
                                                                    n_jobs=self.n_jobs,
-                                                                    random_state = self.random_state)
+                                                                   max_iter=1000,
+                                                                   random_state=self.random_state)
 
         self.logistic_l2 = sklearn.linear_model.LogisticRegression(penalty="l2",
                                                                    solver="saga",
                                                                    n_jobs=self.n_jobs,
-                                                                    random_state = self.random_state)
+                                                                   max_iter=1000,
+                                                                   random_state=self.random_state)
 
         self.logistic_elastic = sklearn.linear_model.LogisticRegression(penalty="elasticnet",
                                                                         solver="saga",
+                                                                        l1_ratio=0.5,
                                                                         n_jobs=self.n_jobs,
-                                                                       random_state = self.random_state)
+                                                                        max_iter=1000,
+                                                                        random_state=self.random_state)
 
         self.ridge = sklearn.linear_model.RidgeClassifier(normalize=True,
-                                                                    random_state = self.random_state)
+                                                          random_state=self.random_state)
 
-        self.svc = sklearn.svm.SVC(random_state = self.random_state)
+        self.linear_models = [
+            (self.logistic_reg, "logistic_reg"),
+            (self.logistic_l1, "logistic_l1"),
+            (self.logistic_l2, "logistic_l2"),
+            (self.ridge, "ridge"),
+        ]
 
-        self.nb = sklearn.naive_bayes.GaussianNB()
-        self.nb_complement = sklearn.naive_bayes.ComplementNB()
-
-        self.knn = sklearn.neighbors.KNeighborsClassifier()
-
+    def _initialize_tree_models(self):
         self.dec_tree = sklearn.tree.DecisionTreeClassifier(max_depth=self.max_depth,
-                                                            random_state = self.random_state)
+                                                            random_state=self.random_state)
 
         self.extr_tree = sklearn.ensemble.ExtraTreesClassifier(max_depth=self.max_depth,
-                                                              n_jobs = self.n_jobs,
-                                                               random_state = self.random_state)
+                                                               n_jobs=self.n_jobs,
+                                                               random_state=self.random_state)
 
         self.random_forest = sklearn.ensemble.RandomForestClassifier(max_depth=self.max_depth,
-                                                                    n_jobs = self.n_jobs,
-                                                                     random_state = self.random_state)
+                                                                     n_jobs=self.n_jobs,
+                                                                     random_state=self.random_state)
 
-        self.bagging_clf = sklearn.ensemble.BaggingClassifier(max_features=0.8,
-                                                              max_samples=self.use_subsample,
-                                                              n_jobs = self.n_jobs,
-                                                              random_state = self.random_state)
+        self.bagging_dt_clf = sklearn.ensemble.BaggingClassifier(max_features=0.8,
+                                                                 max_samples=self.use_subsample,
+                                                                 n_jobs=self.n_jobs,
+                                                                 random_state=self.random_state)
+
+        self.bagging_svc_clf = sklearn.ensemble.BaggingClassifier(
+            base_estimator=sklearn.svm.SVC(random_state=self.random_state,
+                                           ),
+            max_features=0.8,
+            max_samples=self.use_subsample,
+            n_jobs=self.n_jobs,
+            random_state=self.random_state
+            )
 
         self.xgb_clf = xgb.XGBClassifier(
             n_estimators=self.n_estimators,
@@ -616,11 +932,34 @@ class BaseClassificationAnalyzer(BaseAnalyzer):
             random_state=self.random_state
         )
 
+        self.tree_models = [
+            (self.dec_tree, "dec_tree"),
+            (self.extr_tree, "extr_tree"),
+            (self.bagging_dt_clf, "bagged_dt_clf"),
+            (self.bagging_svc_clf, "bagged_svc_clf"),
+            (self.xgb_clf, "xgb_clf"),
+            (self.lgb_clf, "lgb_clf")
+        ]
+
+    def _initialize_nonparametric_models(self):
+        self.svc = sklearn.svm.SVC(random_state=self.random_state,
+                                   probability=True)
+
+        self.nb = sklearn.naive_bayes.GaussianNB()
+        self.nb_complement = sklearn.naive_bayes.ComplementNB()
+
+        self.knn = sklearn.neighbors.KNeighborsClassifier()
+
+    def _initialize_stacked_models(self):
+        pass
+
+    def _initialize_voting_models(self):
+        pass
+
+    def _initialize_model_groups(self):
         # TODO: Organize into model types so each model can .fit on data made for it.
         # Logistic, Linear classifiers. SVC. KNN.
         self.models_that_need_scaled_data = []
-
-        self.tree_based_models = []
 
         # Don't use these with big-data.   KNN or SVC.
         self.models_that_dont_scale_well = [
@@ -636,13 +975,48 @@ class BaseClassificationAnalyzer(BaseAnalyzer):
             (self.logistic_l1, "logistic_l1"),
             (self.logistic_l2, "logistic_l2"),
             (self.ridge, "ridge"),
+            (self.svc, "SVC"),
             (self.nb, "nb"),
             (self.dec_tree, "dec_tree"),
             (self.extr_tree, "extr_tree"),
-            (self.bagging_clf, "bagging_clf"),
+            (self.bagging_dt_clf, "bagged_dt_clf"),
+            (self.bagging_svc_clf, "bagged_svc_clf"),
             (self.xgb_clf, "xgb_clf"),
             (self.lgb_clf, "lgb_clf")
         ]
+
+    def _make_models_multioutput(self):
+
+        i = 0
+        for model, model_name in self.models:
+            print("Converting", model_name, "to multioutput")
+
+            self.models[i] = (sklearn.multioutput.MultiOutputClassifier(model), model_name)
+
+            i += 1
+
+        self.show_models()
+
+    def _initialize_models(self,
+                           multioutput = False):
+        """
+
+        :param multioutput: Whether to make all models multioutput models.
+        :return:
+        """
+
+        # TODO: Add Multiple Dummy Baselines
+        self.dummy = sklearn.dummy.DummyClassifier(strategy="prior")
+
+        # Set random state / seeds for these
+
+        self._initialize_linear_models()
+        self._initialize_nonparametric_models()
+        self._initialize_tree_models()
+        self._initialize_model_groups()
+
+        if self.is_multi_output:
+            self._make_models_multioutput()
 
     def _initialize_metrics(self):
 
@@ -701,7 +1075,6 @@ class BaseClassificationAnalyzer(BaseAnalyzer):
         print(xgb_threshold)
 
 
-
     def show_feature_analysis(self):
 
 
@@ -725,7 +1098,8 @@ class ClassificationAnalyzer(BaseClassificationAnalyzer):
                  n_estimators = 100,
                  use_subsample = 0.8,
                  n_jobs = -1,
-                 simulate_data = False):
+                 simulate_data = False,  # TODO: This feels strange here.
+                 multi_output = False):  # TODO: Make automatic
 
         self.random_state = random_state
 
@@ -735,6 +1109,8 @@ class ClassificationAnalyzer(BaseClassificationAnalyzer):
         self.max_depth = max_depth
         self.is_fit = False
         self.n_jobs = n_jobs
+
+        self.is_multi_output = multi_output
 
         self._initialize_models()
         self._initialize_metrics()
@@ -755,14 +1131,15 @@ class ClassificationAnalyzer(BaseClassificationAnalyzer):
     def split_val_train(self,
                         train_fraction = 4/5,
                         method = "stochastic",
-                        verbose = True):
+                        verbose = True,
+                        ):
         """
         Splits data into train and validation splits.
         Useful for quick processing.
 
         :param X:
         :param y:
-        :param: method ("stochastic", "time_series")
+        :param: method ("stochastic", "time_series", "groupkfold", "multi_stochastic")
         :return:
         """
 
@@ -790,13 +1167,18 @@ class ClassificationAnalyzer(BaseClassificationAnalyzer):
             self.X_valid = X.iloc[split_at_id:, :]
             self.y_valid = y.iloc[split_at_id:]
 
+        if method == "multi_stochastic":
+            self.X_train, self.X_valid, self.y_train, self.y_valid = sklearn.model_selection.train_test_split(
+                X, y, train_size=train_fraction,
+                random_state=self.random_state,
+                shuffle=True
+            )
+
         self.y_true = self.y_valid
         self._update_validation_ready_models()
 
     def cross_validate(self):
         pass
-
-
 
 
     def load_preds(self):
@@ -812,9 +1194,6 @@ class ClassificationAnalyzer(BaseClassificationAnalyzer):
         """
 
         # Validate that the model is fit_models already.
-
-
-
 
 
     def show_preds_report(self, save = False):
@@ -989,6 +1368,9 @@ class ClassificationAnalyzer(BaseClassificationAnalyzer):
     def analyze(self):
         pass
 
+    def show_decision_regions(self):
+        pass
+
     def find_hardest_samples(self):
         """
         ANALYZE:
@@ -1003,6 +1385,10 @@ class ClassificationAnalyzer(BaseClassificationAnalyzer):
         Then do a cluster / correlation / dependency analysis
         in the X field on these samples to find out
         if they have something in common.
+
+        # TODO: Add predict_proba and sort the smallest probabilities.
+        # TODO: Show decision regions.  Above function.
+        # TODO: Add just support_vectors as these are the closest to the decision boundaries.  X[svm.support_]
 
         :return:
         """
