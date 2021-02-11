@@ -985,13 +985,15 @@ class BaseClassificationAnalyzer(BaseAnalyzer):
             (self.lgb_clf, "lgb_clf")
         ]
 
-    def _make_models_multioutput(self):
+    def _make_models_multioutput(self,
+                                 n_jobs = 4):
 
         i = 0
         for model, model_name in self.models:
             print("Converting", model_name, "to multioutput")
 
-            self.models[i] = (sklearn.multioutput.MultiOutputClassifier(model), model_name)
+            self.models[i] = (sklearn.multioutput.MultiOutputClassifier(model,
+                                                                        n_jobs = n_jobs), model_name)
 
             i += 1
 
