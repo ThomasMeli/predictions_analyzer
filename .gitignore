@@ -7,6 +7,7 @@ __pycache__/
 tests/test_submissions/
 wandb/
 tests/wandb
+tests/test_datasets/js_sample_multi.csv
 
 # C extensions
 *.so
