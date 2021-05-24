@@ -13,8 +13,6 @@ use with real numpy or pandas data.
 from tqdm import tqdm
 from time import time
 
-
-
 from lightgbm import LGBMClassifier
 import xgboost as xgb
 
@@ -45,12 +43,7 @@ from predictions_analyzer.analyze import Analyzer
 
 from itertools import combinations
 
-# Put this in an if-statement?
-# By Extension?
-# How to extend this without 'requiring it' if the user
-# Doesn't use it?
 import wandb
-
 
 def get_classification(random_state = 42):
     """
@@ -75,6 +68,54 @@ def get_classification(random_state = 42):
     print(y.shape)
 
     return X, y
+
+class WandbManager:
+    """
+    Encapsulation of Extended Wandb functionality
+    This likely go can in a different 'intergrations' module
+    """
+    pass
+
+    # Todo add keras callback attribute value.
+
+    @staticmethod
+    def initialize:
+        pass
+
+    @staticmethod
+    def log:
+        pass
+
+
+class OptunaManager:
+    """
+    Encapsulation of Extended Optuna functionality
+    This likely go can in a different 'intergrations' module
+
+    """
+    pass
+
+    # attributes of common parameter sweeps
+
+class RegressionModels:
+    pass
+
+class ClassificationModels:
+    pass
+
+class RegressionReportManager:
+    """
+    Encapsulation of Extended Regression Metrics
+
+    """
+    pass
+
+class ClassificationReportManager:
+    """
+    Encapsulation of Extended Classification Metrics
+
+    """
+    pass
 
 class BaseAnalyzer:
     """
@@ -424,6 +465,7 @@ class BaseAnalyzer:
                                    do_feature_importances = True):
 
         # REFACTOR LIKE THIS:
+        # Old proposal
         #self._fit_model(model, model_name, use_wandb=True)
         #self._predict_model()
         #self._wandb_log_probas()
