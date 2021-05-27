@@ -9,4 +9,4 @@ https://predictions-analyzer.readthedocs.io/en/latest
 
 # Notes
 Currently in development.
-Expected first release: Early Febuary 2021
+Expected first stable release: Winter 2021-22
