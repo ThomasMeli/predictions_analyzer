@@ -15,7 +15,7 @@ from typing import List
 def test_classification_models():
     all_models = AllClassificationModels()
 
-    for model in all_models.get_models_list():
+    for model in all_models._get_models_list():
         pass
 
 
@@ -28,8 +28,8 @@ def test_ScikitModels():
         print(dataset.name)
         print(dataset.path)
 
-        # Todo: .get_models_list will be depreciated in favor of an iterable class.
-        for model in AllClassificationModels().get_models_list():
+        # Todo: ._get_models_list will be depreciated in favor of an iterable class.
+        for model in AllClassificationModels()._get_models_list():
 
             print("\n")
             print(model.name)

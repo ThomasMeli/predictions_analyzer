@@ -30,18 +30,21 @@ class Dataset():
 
 class ClassificationDatasets:
 
-    fetal_health_dataset = Dataset(name="fetal",
-                                   path="test_datasets/classification/fetal_health.csv",
-                                   y_name="fetal_health")
+    def __init__(self):
+        self.fetal_health_dataset = Dataset(name="fetal",
+                                       path="test_datasets/classification/fetal_health.csv",
+                                       y_name="fetal_health")
 
-    titanic_dataset = Dataset(name = "titanic",
-                              path = "test_datasets/classification/titanic.csv",
-                              y_name = "Survived")
+        self.titanic_dataset = Dataset(name = "titanic",
+                                  path = "test_datasets/classification/titanic.csv",
+                                  y_name = "Survived")
 
-    all_datasets_list = [
-        fetal_health_dataset, titanic_dataset
+        self.all_datasets = self._get_dataset_list()
+
+    def __getitem__(self, item):
+        return self.all_datasets[item]
+
+    def _get_dataset_list(self):
+        return [
+        self.fetal_health_dataset, self.titanic_dataset
     ]
-
-    @staticmethod
-    def get_list():
-        return ClassificationDatasets.all_datasets_list

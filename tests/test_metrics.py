@@ -14,22 +14,20 @@ from typing import List
 def test_classification_models():
     all_models = AllClassificationModels()
 
-    for model in all_models.get_models_list():
+    for model in all_models._get_models_list():
         pass
 
 
 
 def test_ScikitModels():
 
-    # Todo: .get_list will be depreciated in favor of an iterable class.
-    for dataset in ClassificationDatasets.get_list():
+    for dataset in ClassificationDatasets():
 
         print("\n")
         print(dataset.name)
         print(dataset.path)
 
-        # Todo: .get_models_list will be depreciated in favor of an iterable class.
-        for model in AllClassificationModels().get_models_list():
+        for model in AllClassificationModels():
 
             print("\n")
             print(model.name)
@@ -40,7 +38,7 @@ def test_ScikitModels():
 
             model.report_speeds()
 
-            classification_metrics = AllClassificationMetrics().get_list()
+            classification_metrics = AllClassificationMetrics()
 
             for metric in classification_metrics:
                 print(metric.name)

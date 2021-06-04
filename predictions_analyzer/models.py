@@ -167,30 +167,33 @@ class SKLinearRegression(ScikitModel):
     pass
 
 # MutableSequence Like
-class BaseAllModels():
-    def __str__(self):
-        return str()
+class BaseAllModels:
+    def __init__(self):
+        self.models = []
+
+    #def __str__(self):
+    #    return str()
 
     def __iadd__(self, other):
-        pass
+        return self.models.append(other)
 
     def __add__(self, other):
-        pass
+        return self.models.append(other)
 
     def __getitem__(self, item):
-        pass
+        return self.models[item]
 
-    def __setitem__(self, item):
-        pass
+    #def __setitem__(self, item):
+    #    pass
 
-    def __delitem__(self, key):
-        pass
+    #def __delitem__(self, key):
+    #    pass
 
     def __len__(self):
-        pass
+        return len(self.models)
 
 # MutableSequence
-class AllClassificationModels():
+class AllClassificationModels(BaseAllModels):
 
     def __init__(self):
 
@@ -201,8 +204,10 @@ class AllClassificationModels():
         self.gradboost = ScikitModel(GradientBoostingClassifier(), name = "GradBoost")
         self.randomforest = ScikitModel(RandomForestClassifier(), name = "Random Forest")
 
-    # Todo: .get_models_list will be depreciated in favor of an iterable class.
-    def get_models_list(self):
+        self.models = self._get_models_list()
+
+    # Todo: ._get_models_list will be depreciated in favor of an iterable class.
+    def _get_models_list(self):
 
         return [
             self.decision_tree,
@@ -215,11 +220,13 @@ class AllClassificationModels():
 
 
 
-class AllDummyClassifications():
+
+
+class AllDummyClassifications(BaseAllModels):
     pass
 
 # MutableSequence
-class AllRegressionModels():
+class AllRegressionModels(BaseAllModels):
     # SKLinearRegression
 
     def __init__(self):

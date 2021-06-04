@@ -14,6 +14,7 @@ class Metric:
         self.value = self.metric_object(y_true, y_pred)
         return self.value
 
+
 class RegressionMetric(Metric):
     pass
 
@@ -38,11 +39,15 @@ class AllClassificationMetrics():
         self.accuracy_score = Metric(name = "accuracy",
                                      metric_object=accuracy_score)
 
-    # Todo: Depreciated - to be replaced with iterable object
-    def get_list(self):
+        self.metrics = self._get_classigication_metrics()
+
+    def _get_classigication_metrics(self):
         return [
             self.accuracy_score
         ]
+
+    def __getitem__(self, item):
+        return self.metrics[item]
 
 # Creating the Report
 class Report:

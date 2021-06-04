@@ -2,7 +2,8 @@ from tests.datasets_to_test import *
 
 
 def test_classification_dataset_list():
-    datasets = ClassificationDatasets.get_list()
+    datasets = ClassificationDatasets()
+    print(datasets)
 
     for dataset in datasets:
         print("\n")
