@@ -22,8 +22,8 @@ import sklearn.linear_model
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.tree import ExtraTreeClassifier, ExtraTreeRegressor
 
-from sklearn.ensemble import AdaBoostClassifier, BaggingClassifier, GradientBoostingClassifier
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import AdaBoostClassifier, AdaBoostRegressor, BaggingClassifier, BaggingRegressor
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, GradientBoostingRegressor, RandomForestRegressor
 
 
 import sklearn.ensemble
@@ -66,6 +66,8 @@ class ScikitModel(Model):
         return str(self.model_object)
 
     def fit(self, X, y):
+        # Add Memory + Space Measuring
+
         fit_start_time = time()
         fitted_obj = self.model_object.fit(X, y)
         fit_end_time = time()
@@ -75,6 +77,8 @@ class ScikitModel(Model):
         return fitted_obj
 
     def predict(self, X):
+        # Add Memory + Space Measuring
+
         pred_start_time = time()
         self.predictions = self.model_object.predict(X)
         pred_end_time = time()
@@ -190,7 +194,6 @@ class AllClassificationModels():
 
     def __init__(self):
 
-        self.lasso = ScikitModel(Lasso(), name = "Lasso")
         self.decision_tree = ScikitModel(DecisionTreeClassifier(), name = "Decision Tree")
         self.extra_tree = ScikitModel(ExtraTreeClassifier(), name = "Extra Trees")
         self.adaboost = ScikitModel(AdaBoostClassifier(), name = "AdaBoost")
@@ -198,10 +201,10 @@ class AllClassificationModels():
         self.gradboost = ScikitModel(GradientBoostingClassifier(), name = "GradBoost")
         self.randomforest = ScikitModel(RandomForestClassifier(), name = "Random Forest")
 
+    # Todo: .get_models_list will be depreciated in favor of an iterable class.
     def get_models_list(self):
 
         return [
-            self.lasso,
             self.decision_tree,
             self.extra_tree,
             self.adaboost,
@@ -220,9 +223,12 @@ class AllRegressionModels():
     # SKLinearRegression
 
     def __init__(self):
-        pass
-
-
+        self.decision_tree = ScikitModel(DecisionTreeRegressor(), name="Decision Tree")
+        self.extra_tree = ScikitModel(ExtraTreeRegressor(), name="Extra Trees")
+        self.adaboost = ScikitModel(AdaBoostRegressor(), name="AdaBoost")
+        self.bagging = ScikitModel(BaggingRegressor(), name="BaggingTree")
+        self.gradboost = ScikitModel(GradientBoostingRegressor(), name="GradBoost")
+        self.randomforest = ScikitModel(RandomForestRegressor(), name="Random Forest")
 
 
 class AllDummyRegressions():
