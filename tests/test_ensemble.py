@@ -1,4 +1,4 @@
-from predictions_analyzer.ensemble import *
+from predictions_analyzer.ensembler import *
 import pandas as pd
 from glob import glob
 
